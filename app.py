@@ -297,6 +297,9 @@ def connect():
             session['shop'] = request.args.get("shop")
 
             return redirect('/home')
+        else:
+            print(resp.status_code, resp.text)
+            raise Exception("Cannot connect to app")
     else:
         print(resp.status_code, resp.text)
         raise Exception("Cannot connect to app")

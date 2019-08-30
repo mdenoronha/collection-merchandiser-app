@@ -270,6 +270,12 @@ def instructions():
 @app.route('/connect', methods=['GET'])
 def connect():
 
+    # get nonce
+    nonce_value = request.args.get("state")
+
+    # get hostname
+    shop = request.args.get("shop")
+
     print("********")
     print("hmac")
     print(authenticate_hmac(request))
@@ -279,12 +285,6 @@ def connect():
     print(validators.domain(shop))
     print("endswith")
     print(shop.endswith('myshopify.com'))
-
-    # get nonce
-    nonce_value = request.args.get("state")
-
-    # get hostname
-    shop = request.args.get("shop")
 
     # Carry out oauth verification
     if authenticate_hmac(request) and nonce_value == nonce and validators.domain(shop) and shop.endswith('myshopify.com'):

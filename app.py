@@ -270,6 +270,16 @@ def instructions():
 @app.route('/connect', methods=['GET'])
 def connect():
 
+    print("********")
+    print("hmac")
+    print(authenticate_hmac(request))
+    print("nonce")
+    print(nonce_value == nonce)
+    print("domain")
+    print(validators.domain(shop))
+    print("endswith")
+    print(shop.endswith('myshopify.com'))
+
     # get nonce
     nonce_value = request.args.get("state")
 

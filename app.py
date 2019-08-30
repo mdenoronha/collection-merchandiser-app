@@ -276,20 +276,10 @@ def connect():
     # get hostname
     shop = request.args.get("shop")
 
-    print("********")
-    print("hmac")
-    print(authenticate_hmac(request))
-    print("nonce")
-    print(nonce_value == nonce)
-    print("domain")
-    print(validators.domain(shop))
-    print("endswith")
-    print(shop.endswith('myshopify.com'))
-
     # Carry out oauth verification
     if authenticate_hmac(request) and nonce_value == nonce and validators.domain(shop) and shop.endswith('myshopify.com'):
         params = {
-            "client_id": os.environ.get("SHOPIFY_SECRET"),
+            "client_id": os.environ.get("SHOPIFY_KEY"),
             "client_secret": os.environ.get("SHOPIFY_SECRET"),
             "code": request.args.get("code")
         }

@@ -11,8 +11,6 @@ import json
 import os
 import validators
 
-# REMOVE CONFIG AND UPDATE REFERENCES FOR LIVE
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get("SECRET")
 SECRET = os.environ.get("SHOPIFY_SECRET")
@@ -301,7 +299,7 @@ def connect():
             return redirect('/home')
     else:
         print(resp.status_code, resp.text)
-        raise Exception("Can't connect to app")
+        raise Exception("Cannot connect to app")
 
 # Homepage
 @app.route('/home')

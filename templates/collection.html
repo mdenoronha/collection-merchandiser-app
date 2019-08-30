@@ -306,7 +306,7 @@
     $('#load-more').on('click', function() {
       $('#load-more').attr('disabled', true)
       $.ajax({
-        url: 'https://38c95973.ngrok.io/ajax-collects',
+        url: 'https://shopify-stock-app.herokuapp.com/ajax-collects',
         type: 'GET',
         data: { 'next_link' : next_link,
            'csrfmiddlewaretoken': '{{csrf_token}}'

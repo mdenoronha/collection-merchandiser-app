@@ -308,7 +308,7 @@ def connect():
 @app.route('/home')
 def index():
 
-    shop = request.args.get("shop")
+    shop = session['shop']
 
     return render_template('index.html', shop=shop)
 

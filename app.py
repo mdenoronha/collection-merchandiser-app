@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, Response, session
-from config import Config as cfg
 from flask_wtf.csrf import CSRFProtect
 import urllib
 import hmac
@@ -15,8 +14,8 @@ import validators
 # REMOVE CONFIG AND UPDATE REFERENCES FOR LIVE
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = cfg.SECRET_KEY
-SECRET = cfg.SHOPIFY_CONFIG['API_SECRET']
+app.config['SECRET_KEY'] = os.environ.get("SECRET")
+SECRET = os.environ.get("SHOPIFY_SECRET")
 
 csrf = CSRFProtect()
 csrf.init_app(app)
@@ -282,8 +281,8 @@ def connect():
     # Carry out oauth verification
     if authenticate_hmac(request) and nonce_value == nonce and validators.domain(shop) and shop.endswith('myshopify.com'):
         params = {
-            "client_id": cfg.SHOPIFY_CONFIG["API_KEY"],
-            "client_secret": cfg.SHOPIFY_CONFIG["API_SECRET"],
+            "client_id": os.environ.get("SHOPIFY_SECRET"),
+            "client_secret": os.environ.get("SHOPIFY_SECRET"),
             "code": request.args.get("code")
         }
         resp = requests.post(
@@ -314,5 +313,5 @@ def index():
 
 
 if __name__ == "__main__":
-	app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(host=os.environ.get("IP"), port=int(os.environ.get("PORT")), debug=True)
 

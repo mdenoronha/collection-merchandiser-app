@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Welcome</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+
+  </head>
+  <body style="margin: 0 auto; padding:10%; background-color: #F4F6F8;">
+    <h1>Stock Warning Merchandiser</h1>
+    <p>Save yourself from lost sales with the Stock Warning Merchandiser. Uncover low stock products and remove them from your most visited pages in a breeze.</p>
+
+    <div class="card mb-3">
+      <div class="row no-gutters">
+        <div class="col-md-4">
+          <img id="collection-image" src="{{url_for('static', filename='imgs/placeholder.png')}}" class="card-img" alt="Select a collection" style="max-height: 1000px;">
+        </div>
+        <div class="col-md-8">
+          <div class="card-body">
+            <h5 id="collection-name" class="card-title">Choose a Collection</h5>
+            <div id="manual-update" class="alert alert-warning" role="alert" style="display: none">
+              This collection is not sorted manually. While you will be able to view product information, you will not be able to sort.
+            </div>
+            <p id="collection-description" class="card-text"></p>
+            <p id="collection-link" data-collection="" class="btn disabled btn-primary" style="background-color: #3f4eae; border-color: #3f4eae; cursor: pointer; display: none;">Start</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script
+      src="https://code.jquery.com/jquery-3.4.1.min.js"
+      integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+      crossorigin="anonymous"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <script script src="https://unpkg.com/@shopify/app-bridge"></script>
+
+    <script type="text/javascript">
+    // Init
+    var AppBridge = window['app-bridge'];
+    var createApp = AppBridge.default;
+    var app = createApp({
+      apiKey: '06508637004c80c9f5f731440fb36242',
+      shopOrigin: '{{shop}}',
+    });
+
+    var AppBridge = window['app-bridge'];
+    var actions = AppBridge.actions;
+    var ResourcePicker = actions.ResourcePicker;
+    var Button = actions.Button;
+    var ButtonGroup = actions.ButtonGroup;
+    var Redirect = actions.Redirect;
+    var TitleBar = actions.TitleBar;
+
+    // Init redirect
+    const redirect = Redirect.create(app);
+
+    // Collection selector
+    const collectionPicker = ResourcePicker.create(app, {
+      resourceType: ResourcePicker.ResourceType.Collection,
+      options: {
+        selectMultiple: false,
+      },
+    });
+    const collectionButton = Button.create(app, {label: 'Collections'});
+    const viewCollections = collectionButton.subscribe(Button.Action.CLICK, data => {
+      collectionPicker.dispatch(ResourcePicker.Action.OPEN);
+    });
+
+    // Secondary buttons
+    const homeButton = Button.create(app, {label: 'Home'});
+    const contactButton = Button.create(app, {label: 'Contact'});
+    const instructionsButton = Button.create(app, {label: 'Instructions'});
+    const groupButton = ButtonGroup.create(app, {label: 'Navigation', buttons: [homeButton, contactButton, instructionsButton]});
+    // Secondary buttons actions
+    const viewContact = contactButton.subscribe(Button.Action.CLICK, data => {
+      redirect.dispatch(Redirect.Action.APP, '/contact');
+    });
+    const homeContact = homeButton.subscribe(Button.Action.CLICK, data => {
+      redirect.dispatch(Redirect.Action.APP, '/home');
+    });
+    const viewInstructions = instructionsButton.subscribe(Button.Action.CLICK, data => {
+      redirect.dispatch(Redirect.Action.APP, '/instructions');
+    });
+
+    // Title bar
+    const titleBarOptions = {
+      title: 'Home',
+      buttons: {
+        primary: collectionButton, 
+        secondary: [groupButton]
+      },
+    };
+    const myTitleBar = TitleBar.create(app, titleBarOptions);
+
+    collectionPicker.subscribe(ResourcePicker.Action.SELECT, ({selection}) => {
+      var idArray = selection[0].id.split('/')
+      var id = idArray[idArray.length - 1]
+      $('#collection-name').text(selection[0].title);
+      $('#collection-description').html(selection[0].description.substring(0, 300));
+      console.log(selection[0].image)
+      if(selection[0].image) { 
+        $('#collection-image').attr('src', selection[0].image.originalSrc) 
+      } else {
+        $('#collection-image').attr('src', '{{url_for('static', filename='imgs/placeholder.png')}}') 
+      }
+      if(selection[0].sortOrder != "MANUAL") {
+        $('#manual-update').css('display', 'block')
+      } else {
+        $('#manual-update').css('display', 'hide')
+      }
+      $('#collection-link').attr('data-collection', id).removeClass('disabled').css('display', 'block')
+    });
+
+    $('#collection-link').on('click', function() {
+      if(!$(this).hasClass('disabled')) {
+        redirect.dispatch(Redirect.Action.APP, '/collection/' + $(this).data('collection'));
+      }
+    })
+    </script>
+  </body>
+</html>

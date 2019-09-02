@@ -259,7 +259,7 @@ def contact():
 
 # Privacy Policy page
 @app.route('/privacy-policy', methods=['GET'])
-def contact():
+def privacy():
 
     shop = request.args.get("shop")
 

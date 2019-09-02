@@ -101,19 +101,23 @@
       redirect.dispatch(Redirect.Action.APP, '/privacy-policy');
     });
 
+    $(document).ready(function() {
+
     // Redirects
-    $('#instructions-alert__redirect').on('click', function() {
-      redirect.dispatch(Redirect.Action.APP, '/instructions');
-    })
+      $('#instructions-alert__redirect').on('click', function() {
+        redirect.dispatch(Redirect.Action.APP, '/instructions');
+      })
 
     // Instructions close 
-    var instructionsClose = sessionStorage.getItem("instructions-alert")
-    instructionsClose ? $('#instructions-alert').css('display', 'none')
+      var instructionsClose = sessionStorage.getItem("instructions-alert")
+      instructionsClose ? $('#instructions-alert').css('display', 'none')
 
-    $('#instructions-alert__close').on('click', function() {
-      sessionStorage.setItem('instructions-alert', 'close')
-      $('#instructions-alert').css('display', 'none')
-    })
+      $('#instructions-alert__close').on('click', function() {
+        sessionStorage.setItem('instructions-alert', 'close')
+        $('#instructions-alert').css('display', 'none')
+      })
+
+    });
 
     // Title bar
     const titleBarOptions = {

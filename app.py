@@ -228,7 +228,7 @@ def collection(collection_id):
         return redirect('/error')
 
 @app.route('/error', methods=['GET'])
-def error:
+def error():
 
     shop = request.args.get("shop")
 

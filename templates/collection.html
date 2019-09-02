@@ -102,7 +102,7 @@
 
               {% for variant in product.variants %}
                 {% if not variant.inventory_management %}
-                  {% no_inventory_management = true %}
+                  {% set no_inventory_management = true %}
                   {% break %}
                 {% endif %}
                 {% if total_count.append(total_count.pop() + variant.inventory_quantity) %}{% endif %}

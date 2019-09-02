@@ -23,7 +23,7 @@
 
     const apiKey = '06508637004c80c9f5f731440fb36242';
     const redirectUri = 'https://shopify-stock-app.herokuapp.com/connect';
-    const permissionUrl = '/oauth/authorize?state={{nonce}}&client_id=' + apiKey + '&scope=read_products,read_content,write_products&redirect_uri=' + redirectUri;
+    const permissionUrl = '/oauth/authorize?state={{nonce}}&client_id=' + apiKey + '&scope=read_products,write_products&redirect_uri=' + redirectUri;
 
     // If the current window is the 'parent', change the URL by setting location.href
     if (window.top == window.self) {

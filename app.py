@@ -88,6 +88,7 @@ def ajax_collects():
                                                     endpoint), headers=headers)
     products = json.loads(products_response.text)
 
+    # Create dict of product information to create cards on collection page
     collect_products = {}
     for counter, collect in enumerate(collects['collects']):
         for product in products['products']:
@@ -142,17 +143,6 @@ def returnFromCollection(collection_id, apiSource):
         return json.loads(response.text), next_link
     else: 
         return False
-
-# # Install app route
-# @app.route('/', methods=['GET'])
-# def install():
-
-#     headers = {
-#         "X-Shopify-Access-Token": session.get("access_token"),
-#         "Content-Type": "application/json"
-#     }
-
-#     return render_template('install.html')
 
 # Display products from collection for sort
 @app.route('/collection/<collection_id>', methods=['GET', 'POST'])
@@ -235,7 +225,14 @@ def collection(collection_id):
     if collects and products:
         return render_template('collection.html', collects=collects, products=products.get("products"), response_status=response_status, custom_collection=custom_collection, manual_sort_order=manual_sort_order, next_link=next_link, next_active=next_active, shop=shop)
     else:
-        return False
+        return redirect('/error')
+
+@app.route('/error', methods=['GET'])
+def error:
+
+    shop = request.args.get("shop")
+
+    return render_template('error.html', shop=shop)
 
 # Install route
 @app.route('/install', methods=['GET'])
@@ -249,6 +246,8 @@ def install():
 
     if authenticate_hmac(request):
         return render_template('install.html', nonce=nonce, shop=shop)
+    else:
+        return 'Authentication failed. Please contact support at help@matthewdenoronha.com'
 
 # Contact page
 @app.route('/contact', methods=['GET'])
@@ -257,6 +256,14 @@ def contact():
     shop = request.args.get("shop")
 
     return render_template('contact.html', shop=shop)
+
+# Privacy Policy page
+@app.route('/privacy-policy', methods=['GET'])
+def contact():
+
+    shop = request.args.get("shop")
+
+    return render_template('privacy_policy.html', shop=shop)
 
 # Instructions page
 @app.route('/instructions', methods=['GET'])
@@ -299,10 +306,9 @@ def connect():
             return redirect('/home')
         else:
             print(resp.status_code, resp.text)
-            raise Exception("Cannot connect to app")
+            return 'Cannot connect to app. Please contact support at help@matthewdenoronha.com. {}: {}'.format(e.message, e.description)
     else:
-        print(resp.status_code, resp.text)
-        raise Exception("Cannot connect to app")
+        return 'Authentication failed. Please contact support at help@matthewdenoronha.com'
 
 # Homepage
 @app.route('/home')

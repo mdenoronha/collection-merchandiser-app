@@ -16,7 +16,7 @@
     <p>Save yourself from lost sales with the Collection Merchandiser Plus Stock Alerts. Uncover low stock products and remove them from your most visited pages in a breeze.</p>
 
     <div id="instructions-alert" class="alert alert-warning" role="alert">
-      <span id="instructions-alert__close" style="float: right;">X</span>
+      <span id="instructions-alert__close" style="display: none; float: right;">X</span>
       First time here? Go to <span id="instructions-alert__redirect" style="text-decoration: underline;     cursor: pointer;">Instructions</span> for help on getting started.
     </div>
 
@@ -112,6 +112,8 @@
       var instructionsClose = sessionStorage.getItem("instructions-alert")
       if(instructionsClose) {
         $('#instructions-alert').css('display', 'none')
+      } else {
+        $('#instructions-alert').css('display', 'block')
       }
 
       $('#instructions-alert__close').on('click', function() {

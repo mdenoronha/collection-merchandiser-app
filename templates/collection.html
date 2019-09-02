@@ -212,6 +212,7 @@
     };
     const myTitleBar = TitleBar.create(app, titleBarOptions);
 
+    // Update background colors based on variant percent
     $('.product-sort__percent').each(function() {
       var percent = -(($(this).data('variants-percent') - 100) / 100)
       if (percent != -0 ) {
@@ -226,6 +227,7 @@
 
       {% if custom_collection %}
 
+      // Update input form with values for custom collection
       $( "#sortable" ).sortable({
         change: function( event, ui ) {
           $(window).mouseup(function() {
@@ -244,6 +246,7 @@
 
       {% else %}
 
+      // Update input form with values for smart collection
       $( "#sortable" ).sortable({
         change: function( event, ui ) {
           $(window).mouseup(function() {
@@ -260,35 +263,36 @@
         }
       });
 
+      {% endif %}
+
       $("#sortable").disableSelection();
 
-      {% endif %}
+    {% endif %}
 
-      var rows = sessionStorage.getItem("Rows")
-      if (rows) { 
-        $('.product-sort').css('width', rows).removeClass('col-4')
-        $('#row-select option[val="' + rows + '"]').attr('selected', 'selected')
-      }
+    // Update products per row
+    var rows = sessionStorage.getItem("Rows")
+    if (rows) { 
+      $('.product-sort').css('width', rows).removeClass('col-4')
+      $('#row-select option[val="' + rows + '"]').attr('selected', 'selected')
+    }
 
-      $('#row-select').change(function() {
-        sessionStorage.Rows = $(this).val()
-        $('.product-sort').css('width', $(this).val()).removeClass('col-4')
-      })
+    $('#row-select').change(function() {
+      sessionStorage.Rows = $(this).val()
+      $('.product-sort').css('width', $(this).val()).removeClass('col-4')
+    })
 
-      {% endif %}
-
-      // Display options
-      var show_properties = ['show_text', 'show_variants', 'show_stock', 'show_available']
-      $(show_properties).each(function(index, value) {
+    // Display options
+    var show_properties = ['show_text', 'show_variants', 'show_stock', 'show_available']
+    $(show_properties).each(function(index, value) {
         if (!sessionStorage[value]) {
           sessionStorage.setItem(value, 'show')
         } else if (sessionStorage[value] == 'hide') {
           $('.input-group__show[name=' + value + ']').prop('checked', false)
           $('.' + value + '__output').addClass('hidden')
         }
-      })
+      })  
 
-      $('.input-group__show').change(function() {
+    $('.input-group__show').change(function() {
         var ChangedOutput = $(this).attr('name');
         $('.' + ChangedOutput + '__output').toggleClass('hidden');
         sessionStorage[ChangedOutput] == 'show' ? sessionStorage.setItem(ChangedOutput, 'hide') : sessionStorage.setItem(ChangedOutput, 'show') 
@@ -298,6 +302,7 @@
     })
     {% endif %}
 
+    // If more products to load, show load more button
     var next_link = '{{next_link}}'
     {% if next_active %}
     var next_active = true
@@ -306,7 +311,8 @@
     {% endif %}
     next_active ? $('#load-more').attr('disabled', false) : $('#load-more').attr('disabled', true)
 
-    // AJAX
+    // AJAX to retrieve next 10 products, copy first product card, update values to new products and
+    // append to sortable section
     $('#load-more').on('click', function() {
       $('#load-more').attr('disabled', true)
       $.ajax({
@@ -318,26 +324,33 @@
         success: function(response) {
           $('#load-more').attr('disabled', false)
           $.each(response.collect_products, function(index, value) {
+            // Update cards' ids
             var el = $('.product-sort:first-child')
                 .clone()
                 .attr('data-collect-id', value.collect_id)
                 .attr('data-product-id', value.product_id)
                 .attr('data-position', value.position)
+            // Update card image and title
             el.find('.product-sort_image').attr('src', value.product_image.src)
             el.find('.show_text__output').text(value.product_title)
+            // Update variants (total and percentage)
             var avail_variants = value.avail_variants * 100
             avail_variants == 0 ? el.find('.show_variants__output').data('percent', avail_variants) : el.find('.show_variants__output').data('percent', avail_variants + '%') 
             el.find('.show_variants__output').text(avail_variants + '%')
             el.find('.show_stock__output').text(value.total_variants)
+            // Update products availability
             el.find('.show_available__output').text(value.product_available)
             value.product_available == 'Unavailable' ? el.find('.show_available__output').removeClass('badge-success').addClass('badge-secondary') : el.find('.show_available__output').addClass('badge-success').removeClass('badge-secondary')
+            // Update background color based on variant percentage
             $(el).find('.product-sort__card').css('background-color', 'white')
             var percent = -((avail_variants - 100) / 100)
             if(percent != 0) {
               $(el).find('.product-sort__card').css('background-color', 'rgba(165, 28, 28,' + percent + ')')
             }
+            // Add to sortable section
             $(el).insertAfter(".product-sort:last-child")
           });
+          // Update next_link and load more based on whether there are more products to load
           next_link = response.next_link
           next_active = response.next_active
           next_active ? $('#load-more').attr('disabled', false) : $('#load-more').attr('disabled', true)

@@ -110,20 +110,21 @@
               {% endif %}
               {% endfor %}
 
-              {% if not ns.no_inventory_management %}
               <!-- Work our percentage -->
                 {% set total = product.variants | length %}
-                {% if variables_count[0] != 0 %}
-                  {% set percent = variables_count[0] / total * 100 %}
-                  <p data-variants-percent="{{percent|round|int}}" class="product-sort__percent show_variants__output">{{percent|round|int}}%</p>
-                {% else %}
-                  <p data-variants-percent="0" class="product-sort__percent show_variants__output">0%</p>
-                {% endif %}
+
+                <div {% if ns.no_inventory_management %}style="display: none"{% endif %} class="show_inventory__output">
+                  {% if variables_count[0] != 0 %}
+                    {% set percent = variables_count[0] / total * 100 %}
+                    <p data-variants-percent="{{percent|round|int}}" class="product-sort__percent show_variants__output">{{percent|round|int}}%</p>
+                  {% else %}
+                    <p data-variants-percent="0" class="product-sort__percent show_variants__output">0%</p>
+                  {% endif %}
                   <p class="show_stock__output">{{total_count[0]}}</p>
-              {% else %}
-                <p data-variants-percent="100" class="product-sort__percent show_variants__output" style="display: none;"></p>
-                <span class="show_available__output badge badge-secondary" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Some or all variants of this product don't track inventory numbers. For this reason stock information is not shown" style="word-wrap: break-word width: 100%; white-space: unset;">Non-Standard Inventory</span>
-              {% endif %}
+                </div>
+
+                <span {% if not ns.no_inventory_management %}style="display: none"{% endif %} class="show_no_inventory__output badge badge-secondary" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Some or all variants of this product don't track inventory numbers. For this reason stock information is not shown" style="word-wrap: break-word width: 100%; white-space: unset;">Non-Standard Inventory</span>
+
               </div>
               </div>
               </div>
@@ -157,10 +158,10 @@
       crossorigin="anonymous"></script>
     <!-- jQuery UI -->
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <!-- Popper.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <!-- App SDK -->
     <script src="https://unpkg.com/@shopify/app-bridge@1.6/umd/index.development.js"></script>
     <!-- jQuery Touch Punch for mobile functionlaity -->
@@ -350,15 +351,26 @@
             el.find('.show_text__output').text(value.product_title)
 
             // Update variants (total and percentage)
-            var avail_variants = value.avail_variants * 100
-            avail_variants == 0 ? el.find('.show_variants__output').data('percent', avail_variants) : el.find('.show_variants__output').data('percent', avail_variants + '%') 
-            el.find('.show_variants__output').text(avail_variants + '%')
-            el.find('.show_stock__output').text(value.total_variants)
-
+            if(value.no_inventory_management) {
+              // If product does not track inventory
+              el.find('.show_inventory__output').css('display', 'none')
+              el.find('.show_no_inventory__output').css('display', 'block')
+              var avail_variants = 100
+              el.find('.show_variants__output').data('percent', avail_variants)
+            } else {
+              // If product does track inventory
+              el.find('.show_inventory__output').css('display', 'block')
+              el.find('.show_no_inventory__output').css('display', 'none')
+              var avail_variants = value.avail_variants * 100
+              avail_variants == 0 ? el.find('.show_variants__output').data('percent', avail_variants) : el.find('.show_variants__output').data('percent', avail_variants + '%') 
+              el.find('.show_variants__output').text(avail_variants + '%')
+              el.find('.show_stock__output').text(value.total_variants)
+            }
 
             // Update products availability
             el.find('.show_available__output').text(value.product_available)
             value.product_available == 'Unavailable' ? el.find('.show_available__output').removeClass('badge-success').addClass('badge-secondary') : el.find('.show_available__output').addClass('badge-success').removeClass('badge-secondary')
+
             // Update background color based on variant percentage
             $(el).find('.product-sort__card').css('background-color', 'white')
             var percent = -((avail_variants - 100) / 100)

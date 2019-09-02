@@ -122,9 +122,7 @@
                   {% endif %}
                   <p class="show_stock__output">{{total_count[0]}}</p>
                 </div>
-
-                <span {% if not ns.no_inventory_management %}style="display: none"{% endif %} class="show_no_inventory__output badge badge-secondary" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Some or all variants of this product don't track inventory numbers. For this reason stock information is not shown" style="word-wrap: break-word width: 100%; white-space: unset;">Non-Standard Inventory</span>
-
+                <span {% if not ns.no_inventory_management %}style="display: none"{% endif %} class="show_no_inventory__output badge badge-secondary" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Some or all variants of this product don't track inventory. For this reason stock information is not shown" style="word-wrap: break-word width: 100%; white-space: unset;">Non-Standard Inventory</span>
               </div>
               </div>
               </div>
@@ -232,14 +230,12 @@
       }
     })
 
-    // Enable popovers
-    $(function () {
-      $('[data-toggle="popover"]').popover()
-    })
-
     {% if manual_sort_order %}
 
     $(document).ready(function() {
+
+      // Enable popovers
+      $('[data-toggle="popover"]').popover()
 
       {% if custom_collection %}
 
@@ -379,6 +375,9 @@
             }
             // Add to sortable section
             $(el).insertAfter(".product-sort:last-child")
+
+            // Enable popover
+            $('[data-toggle="popover"]').popover()
           });
           // Update next_link and load more based on whether there are more products to load
           next_link = response.next_link

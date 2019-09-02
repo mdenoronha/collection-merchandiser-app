@@ -95,7 +95,11 @@ def ajax_collects():
             if product['id'] == collect['product_id']:
                 total_variants = 0
                 avail_variants = 0
+                no_inventory_management = False
                 for variant in product['variants']:
+                    if not variant['inventory_management']:
+                        no_inventory_management = True
+                        break
                     if variant['inventory_quantity'] > 0:
                         avail_variants = avail_variants + 1
                     total_variants = total_variants + variant['inventory_quantity']
@@ -107,6 +111,7 @@ def ajax_collects():
                     'product_title': product['title'],
                     'product_image': product['images'][0],
                     'product_available': availability,
+                    'no_inventory_management': no_inventory_management,
                     'total_variants': total_variants,
                     'avail_variants': avail_variants / len(product['variants'])
                 }

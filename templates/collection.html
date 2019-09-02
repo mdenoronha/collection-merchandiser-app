@@ -122,7 +122,7 @@
                   <p class="show_stock__output">{{total_count[0]}}</p>
               {% else %}
                 <p data-variants-percent="100" class="product-sort__percent show_variants__output" style="display: none;"></p>
-                <span class="show_available__output badge badge-secondary" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Some or all variants of this product don't track inventory numbers. For this reason stock information is not shown">Non-Standard Inventory</span>
+                <span class="show_available__output badge badge-secondary" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Some or all variants of this product don't track inventory numbers. For this reason stock information is not shown" style="word-wrap: break-word width: 100%; white-space: unset;">Non-Standard Inventory</span>
               {% endif %}
               </div>
               </div>
@@ -159,6 +159,8 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <!-- Popper.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
     <!-- App SDK -->
     <script src="https://unpkg.com/@shopify/app-bridge@1.6/umd/index.development.js"></script>
     <!-- jQuery Touch Punch for mobile functionlaity -->

@@ -98,20 +98,19 @@
             <!-- Check variants in stock -->
               {% set variables_count = [0] %}
               {% set total_count = [0] %}
-              {% set no_inventory_management = false %}
+              {% set ns = namespace(no_inventory_management=false) %}
 
               {% for variant in product.variants %}
                 {% if not variant.inventory_management %}
-                  {% set no_inventory_management = true %}
+                  {% set ns.no_inventory_management = true %}
                 {% endif %}
                 {% if total_count.append(total_count.pop() + variant.inventory_quantity) %}{% endif %}
-                }
               {% if variant.inventory_quantity > 0 %}
                 {% if variables_count.append(variables_count.pop() + 1) %}{% endif %}
               {% endif %}
               {% endfor %}
 
-              {% if not no_inventory_management %}
+              {% if not ns.no_inventory_management %}
               <!-- Work our percentage -->
                 {% set total = product.variants | length %}
                 {% if variables_count[0] != 0 %}

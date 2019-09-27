@@ -49,6 +49,12 @@
               </div>
               <select id="row-select" class="custom-select" id="inputGroupSelect01">
                 <option value="" selected="" disabled>Row</option>
+                <option value="8.33%">12</option>
+                <option value="9.09%">11</option>
+                <option value="10%">10</option>
+                <option value="11.11%">9</option>
+                <option value="12.5%">8</option>
+                <option value="14.28%">7</option>
                 <option value="16.66%">6</option>
                 <option value="20%">5</option>
                 <option value="25%">4</option>
@@ -88,13 +94,16 @@
           {% if product.id == collect.product_id %}
 
             <div data-position={{collect.position}} data-collect-id="{{collect.id}}" data-product-id="{{product.id}}" class="product-sort col-4">
-              <div style="background-color: white; margin: 10px; border-radius: .25rem;">
-              <div class="product-sort__card card" style="padding: 10px;">
+              <div style="background-color: white; margin: 5px; border-radius: .25rem;">
+              <div class="product-sort__card card" style="padding: 3px;">
               {% if product.images[0] %}
               <img class="product-sort_image" src="{{product.images[0].src}}" style="width: 100%;">
               {% endif %}
-              <div style="padding: 10px 0; text-align: center; background-color: white;">
+              <div style="padding: 5px 0; text-align: center; background-color: white;">
               <h6 class="show_text__output">{{ product.title }}</h6>
+
+              {% set price = product.variants[0].price %}
+              <p class="show_price__output">{{ shop_currency |replace('{{amount}}', price, 1) }}<p>
               {% if not product.published_at %}
               <span class="show_available__output badge badge-secondary">Unavailable</span>
               {% else %}
@@ -128,7 +137,7 @@
                   {% endif %}
                   <p class="show_stock__output">{{total_count[0]}}</p>
                 </div>
-                <span {% if not ns.no_inventory_management %}style="display: none"{% endif %} class="show_no_inventory__output wrapped-badge badge badge-secondary" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Some or all variants of this product don't track inventory. For this reason stock information is not shown">Non-Standard Inventory</span>
+                <span {% if not ns.no_inventory_management %}style="display: none"{% endif %} class="show_no_inventory__output show_variants__output wrapped-badge badge badge-secondary" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Some or all variants of this product don't track inventory. For this reason stock information is not shown">Non-Standard Inventory</span>
               </div>
               </div>
               </div>
@@ -182,7 +191,7 @@
     var AppBridge = window['app-bridge'];
     var createApp = AppBridge.default;
     var app = createApp({
-      apiKey: '06508637004c80c9f5f731440fb36242',
+      apiKey: '6f3f5898d1df75bdb86fce83780bfb4b',
       shopOrigin: '{{shop}}',
     });
 
@@ -354,9 +363,15 @@
                 .attr('data-collect-id', value.collect_id)
                 .attr('data-product-id', value.product_id)
                 .attr('data-position', value.position)
-            // Update card image and title
+
+            // Update card image, title & price
             el.find('.product-sort_image').attr('src', value.product_image.src)
             el.find('.show_text__output').text(value.product_title)
+            var currency = '{{ shop_currency }}'
+            {% raw %}
+            var price = value.product_varied_price ? currency.replace('{{amount}}', value.product_price) + '(Varied)' : currency.replace('{{amount}}', value.product_price) 
+            {% endraw %}
+            el.find('.show_price__output').text(price)
 
             // Update variants (total and percentage)
             if(value.no_inventory_management) {
@@ -369,7 +384,7 @@
               // If product does track inventory
               el.find('.show_inventory__output').css('display', 'block')
               el.find('.show_no_inventory__output').css('display', 'none')
-              var avail_variants = value.avail_variants * 100
+              var avail_variants = Math.floor(value.avail_variants * 100)
               avail_variants == 0 ? el.find('.show_variants__output').data('percent', avail_variants) : el.find('.show_variants__output').data('percent', avail_variants + '%') 
               el.find('.show_variants__output').text(avail_variants + '%')
               el.find('.show_stock__output').text(value.total_variants)
@@ -424,6 +439,10 @@
       .product-sort p {
         font-size: 0.7em;
         margin: 0.2em;
+      }
+
+      .badge {
+        font-size: 60%;
       }
     </style>
   </body>

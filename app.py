@@ -11,6 +11,7 @@ import json
 import os
 import validators
 
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get("SECRET")
 SECRET = os.environ.get("SHOPIFY_SECRET")
@@ -96,6 +97,8 @@ def ajax_collects():
                 total_variants = 0
                 avail_variants = 0
                 no_inventory_management = False
+                min_price = False
+                varied_price = False
                 for variant in product['variants']:
                     if not variant['inventory_management']:
                         no_inventory_management = True
@@ -103,7 +106,15 @@ def ajax_collects():
                     if variant['inventory_quantity'] > 0:
                         avail_variants = avail_variants + 1
                     total_variants = total_variants + variant['inventory_quantity']
+                    # Set price
+                    if not min_price:
+                        min_price = float(variant['price'])
+                    else:
+                        if float(variant['price']) > min_price:
+                            min_price = variant['price']
+                            varied_price = True
                 availability = 'Available' if product['published_at'] else 'Unavailable'
+
                 temp_product_collect = {
                     'product_id': product['id'],
                     'collect_id': collect['id'],
@@ -111,6 +122,8 @@ def ajax_collects():
                     'product_title': product['title'],
                     'product_image': product['images'][0],
                     'product_available': availability,
+                    'product_price': min_price,
+                    'product_varied_price': varied_price,
                     'no_inventory_management': no_inventory_management,
                     'total_variants': total_variants,
                     'avail_variants': avail_variants / len(product['variants'])
@@ -133,7 +146,7 @@ def returnFromCollection(collection_id, apiSource):
         "Content-Type": "application/json"
     }
 
-    endpoint = "/admin/api/2019-07/" + apiSource +".json?collection_id=%s&limit=10" % collection_id
+    endpoint = "/admin/api/2019-07/" + apiSource +".json?collection_id=%s&limit=30" % collection_id
     response = requests.get("https://{0}{1}".format(session.get("shop"),
                                                     endpoint), headers=headers)
 
@@ -225,10 +238,18 @@ def collection(collection_id):
                                                     endpoint), headers=headers)
     products = json.loads(products_response.text)
 
+    shop_endpoint = "/admin/api/2019-07/shop.json" 
+    shop_response = requests.get("https://{0}{1}".format(session.get("shop"),
+                                                    shop_endpoint), headers=headers)
+    shop_json = json.loads(shop_response.text)
+    shop_currency = shop_json['shop']['money_format']
+
     shop = request.args.get("shop")
 
+
+
     if collects and products:
-        return render_template('collection.html', collects=collects, products=products.get("products"), response_status=response_status, custom_collection=custom_collection, manual_sort_order=manual_sort_order, next_link=next_link, next_active=next_active, shop=shop)
+        return render_template('collection.html', collects=collects, products=products.get("products"), response_status=response_status, custom_collection=custom_collection, manual_sort_order=manual_sort_order, next_link=next_link, next_active=next_active, shop=shop, shop_currency=shop_currency)
     else:
         return redirect('/error')
 
@@ -325,5 +346,5 @@ def index():
 
 
 if __name__ == "__main__":
-    app.run(host=os.environ.get("IP"), port=int(os.environ.get("PORT")))
+    app.run(host=os.environ.get("IP"), port=int(os.environ.get("PORT")), debug=True)
 

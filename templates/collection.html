@@ -107,7 +107,7 @@
               <h6 class="show_text__output">{{ product.title }}</h6>
 
               {% set price = product.variants[0].price %}
-              <p class="show_price__output">{{ shop_currency |replace('{{amount}}', price, 1) }}<p>
+              <p class="show_price__output">{{ shop_currency |replace('{{amount}}', price, 1) }}</p>
               {% if not product.published_at %}
               <span class="show_available__output badge badge-secondary">Unavailable</span>
               {% else %}

@@ -139,9 +139,9 @@
                   {% else %}
                     <p data-variants-percent="0" class="product-sort__percent show_variants__output">0%</p>
                   {% endif %}
-                  <p class="show_stock__output">{{total_count[0]}}</p>
+                  <p id="show_stock__output" class="show_stock__output">{{total_count[0]}}</p>
                 </div>
-                <span {% if not ns.no_inventory_management %}style="display: none"{% endif %} class="show_no_inventory__output show_variants__output wrapped-badge badge badge-secondary" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Some or all variants of this product don't track inventory. For this reason stock information is not shown">Non-Standard Inventory</span>
+                <span {% if not ns.no_inventory_management %}style="display: none"{% endif %} class="show_no_inventory__output show_stock__output wrapped-badge badge badge-secondary" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Some or all variants of this product don't track inventory. For this reason stock information is not shown">Non-Standard Inventory</span>
               </div>
               </div>
               </div>
@@ -391,7 +391,7 @@
               var avail_variants = Math.floor(value.avail_variants * 100)
               avail_variants == 0 ? el.find('.show_variants__output').data('percent', avail_variants) : el.find('.show_variants__output').data('percent', avail_variants + '%') 
               el.find('.show_variants__output').text(avail_variants + '%')
-              el.find('.show_stock__output').text(value.total_variants)
+              el.find('#show_stock__output').text(value.total_variants)
             }
 
             // Update products availability

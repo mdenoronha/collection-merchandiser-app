@@ -242,7 +242,7 @@ def collection(collection_id):
     shop_response = requests.get("https://{0}{1}".format(session.get("shop"),
                                                     shop_endpoint), headers=headers)
     shop_json = json.loads(shop_response.text)
-    shop_currency = shop_json['shop']['money_format']
+    shop_currency = shop_json['shop']['money_with_currency_format']
 
     shop = request.args.get("shop")
 

@@ -5,7 +5,7 @@ import hmac
 import hashlib
 import random
 import string
-
+from bs4 import BeautifulSoup
 import requests
 import json
 import os
@@ -242,7 +242,9 @@ def collection(collection_id):
     shop_response = requests.get("https://{0}{1}".format(session.get("shop"),
                                                     shop_endpoint), headers=headers)
     shop_json = json.loads(shop_response.text)
-    shop_currency = shop_json['shop']['money_with_currency_format']
+    shop_html = BeautifulSoup(shop_json['shop']['money_with_currency_format'])
+    shop_currency = shop_html.text
+    
 
     shop = request.args.get("shop")
 

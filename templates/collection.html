@@ -375,7 +375,7 @@
             {% raw %}
             var price = value.product_varied_price ? currency.replace('{{amount}}', value.product_price) + '(Varied)' : currency.replace('{{amount}}', value.product_price) 
             {% endraw %}
-            el.find('.show_price__output').text(price)
+            el.find('.show_price__output').html(price)
 
             // Update variants (total and percentage)
             if(value.no_inventory_management) {

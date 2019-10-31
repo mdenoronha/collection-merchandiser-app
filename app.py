@@ -34,7 +34,7 @@ SECRET = os.environ.get("SHOPIFY_SECRET")
 # MongoDB
 # REMOVE ****
 CORS(app)
-app.config["MONGO_URI"] = os.environ.get("MONG_URL")
+app.config["MONGO_URI"] = os.environ.get("MONGO_URL")
 mongo = PyMongo(app)
 
 csrf = CSRFProtect()

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Collection Merchandiser</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+
+  </head>
+  <body style="margin: 0 auto; padding:10%; background-color: #F4F6F8;">
+    <h1>Automations</h1>
+    <p>These are automations</p>
+
+    <h3>New Product > Add to Front</h3>
+
+    <div class="custom-control custom-switch">
+      <input id="products/create" type="checkbox" {% if webhookIds != [] %}checked{% endif %} class="custom-control-input webhook-control" data-webhook-topic="products/create" data-webhook-id="{{webhookIds[0]}}" id="products/create">
+      <label class="custom-control-label" for="products/create">Enable</label>
+    </div>
+
+    <button onclick="newProductPicker.dispatch(ResourcePicker.Action.OPEN)">Collection</button>
+    <button onclick="retrieveCollections('new_products_automation')">Retrieve Collection</button>
+    <ul id="new-products-collections">
+
+    </ul>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script
+      src="https://code.jquery.com/jquery-3.4.1.min.js"
+      integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+      crossorigin="anonymous"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <script script src="https://unpkg.com/@shopify/app-bridge"></script>
+
+    <script type="text/javascript">
+    // Init
+    var AppBridge = window['app-bridge'];
+    var createApp = AppBridge.default;
+    var app = createApp({
+      apiKey: '6f3f5898d1df75bdb86fce83780bfb4b',
+      shopOrigin: '{{shop}}',
+    });
+
+    var AppBridge = window['app-bridge'];
+    var actions = AppBridge.actions;
+    var ResourcePicker = actions.ResourcePicker;
+    var Button = actions.Button;
+    var ButtonGroup = actions.ButtonGroup;
+    var Redirect = actions.Redirect;
+    var TitleBar = actions.TitleBar;
+
+    // Init redirect
+    const redirect = Redirect.create(app);
+
+    // Collection selector
+    const newProductPicker = ResourcePicker.create(app, {
+      resourceType: ResourcePicker.ResourceType.Collection,
+      options: {
+        selectMultiple: true,
+      },
+    });
+
+    $('.webhook-control').on('change', function(checkbox) {
+      if($(this).is(':checked')) {
+        createWebhook($(this).data('webhook-topic'), 'create')
+      } else {
+        createWebhook($(this).data('webhook-topic'), 'delete')
+      }
+    })
+
+    function createWebhook(webhook, action) {
+      $.ajax({
+        url: 'https://shopify-stock-app.herokuapp.com/update_webhook',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          'shop': '{{shop}}',
+          'access_token': '{{access_token}}',
+          'webhook': webhook,
+          'action': action,
+          'csrfmiddlewaretoken': '{{csrf_token}}'
+        })
+      })
+    }
+
+    function submitCollections(selection, automation) {
+      var collectionIds = selection.map(function(collection) {
+        var tempCollection = collection.id.split('/')
+        return {
+          collectionId: tempCollection[tempCollection.length - 1],
+          title: collection['title'],
+          handle: collection['handle']
+        }
+      })
+      var data = {
+        'update_payload': collectionIds,
+        'shop': '{{shop}}',
+        'automation': automation,
+        'csrfmiddlewaretoken': '{{csrf_token}}'
+      }
+      $.ajax({
+        url: 'https://shopify-stock-app.herokuapp.com/automations_update',
+        type: 'POST',
+        contentType: "application/json",
+        data: JSON.stringify(data),
+        success: function() {
+          retrieveCollections(automation)
+        }
+      })
+    }
+
+    function retrieveCollections(automation) {
+      $.ajax({
+        url: 'automations_retrieve',
+        type: 'GET',
+        data: {
+          'automation': automation,
+          'shop': '{{shop}}'
+        },
+        success: function(response){
+          $('#new-products-collections').html('')
+          response['data'].forEach(function(collection){
+            $('#new-products-collections').append('<li class="collection-list-item">' + collection.title + '<span class="remove-collection-button" data-automation="' + automation + '" data-handle="' + collection.handle + '">X</span></li>')
+          })
+          activateRemoveButtons()
+        }
+      })
+    }
+
+    function activateRemoveButtons() {
+      $('.remove-collection-button').on('click', function() {
+        let collectionHandle = $(this).data('handle')
+        let automation = $(this).data('automation')
+        let list_item = $(this).closest('.collection-list-item')
+        $.ajax({
+          url: 'https://shopify-stock-app.herokuapp.com/automations_delete',
+          type: 'POST',
+          contentType: "application/json",
+          data: JSON.stringify({
+            'collectionHandle': collectionHandle,
+            'automation': automation,
+            'shop': '{{shop}}'
+          }),
+          success: function() {
+            list_item.remove()
+          }
+        })
+      })
+    }
+    
+    // Secondary buttons
+    const homeButton = Button.create(app, {label: 'Home'});
+    const contactButton = Button.create(app, {label: 'Contact'});
+    const instructionsButton = Button.create(app, {label: 'Instructions'});
+    const privacyButton = Button.create(app, {label: 'Privacy Policy'});
+
+    const groupButton = ButtonGroup.create(app, {label: 'Navigation', buttons: [homeButton, contactButton, instructionsButton, privacyButton]});
+    // Secondary buttons actions
+    const viewContact = contactButton.subscribe(Button.Action.CLICK, data => {
+      redirect.dispatch(Redirect.Action.APP, '/contact');
+    });
+    const homeContact = homeButton.subscribe(Button.Action.CLICK, data => {
+      redirect.dispatch(Redirect.Action.APP, '/home');
+    });
+    const viewInstructions = instructionsButton.subscribe(Button.Action.CLICK, data => {
+      redirect.dispatch(Redirect.Action.APP, '/instructions');
+    });
+    const viewPrivacy = privacyButton.subscribe(Button.Action.CLICK, data => {
+      redirect.dispatch(Redirect.Action.APP, '/privacy-policy');
+    });
+
+    // Title bar
+    const titleBarOptions = {
+      title: 'Home',
+      buttons: {
+        secondary: [groupButton]
+      },
+    };
+    const myTitleBar = TitleBar.create(app, titleBarOptions);
+
+    newProductPicker.subscribe(ResourcePicker.Action.SELECT, ({selection}) => {
+      submitCollections(selection, 'new_products_automation')
+    })
+    </script>
+  </body>
+</html>

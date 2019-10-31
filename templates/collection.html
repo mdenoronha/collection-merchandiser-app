@@ -100,9 +100,7 @@
             <div data-position={{collect.position}} data-collect-id="{{collect.id}}" data-product-id="{{product.id}}" class="product-sort col-4">
               <div style="background-color: white; margin: 5px; border-radius: .25rem;">
               <div class="product-sort__card card" style="padding: 3px;">
-              {% if product.images[0] %}
-              <img class="product-sort_image" src="{{product.images[0].src}}" style="width: 100%;">
-              {% endif %}
+              <img class="product-sort_image" src="{% if product.images[0] %}{{product.images[0].src}}{% endif %}" style="width: 100%;">
               <div style="padding: 5px 0; text-align: center; background-color: white;">
               <h6 class="show_text__output">{{ product.title }}</h6>
 

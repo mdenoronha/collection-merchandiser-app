@@ -123,7 +123,7 @@ def ajax_collects():
                     'collect_id': collect['id'],
                     'position': collect['position'],
                     'product_title': product['title'],
-                    'product_image': product['images'][0],
+                    'product_image': product_image,
                     'product_available': availability,
                     'product_price': min_price,
                     'product_varied_price': varied_price,

@@ -630,7 +630,7 @@ def automations():
         headers=headers)
 
     webhooks = json.loads(response.text)['webhooks']
-    webhookIds = [webhook['id'] for webhook in webhooks if webhook['topic'] == "collections/update"]
+    webhookIds = [webhook['id'] for webhook in webhooks if webhook['topic'] == "products/create"]
 
     return render_template('automations.html', shop=shop, webhookIds=webhookIds, access_token=session.get("access_token"))
     
@@ -647,7 +647,7 @@ def updateWebhook():
     payload = {
         "webhook": {
         "topic": reponse["webhook"],
-        "address": '{0}/{1}'.format(os.environ["HOST"], reponse["webhook"]),
+        "address": '{0}/{1}'.format(os.environ.get("HOST"), reponse["webhook"]),
         "format": "json"
         }
     }

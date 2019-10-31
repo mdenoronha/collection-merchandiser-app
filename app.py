@@ -109,10 +109,10 @@ def ajax_collects():
                             varied_price = True
                     if not variant['inventory_management']:
                         no_inventory_management = True
-                        break
-                    if variant['inventory_quantity'] > 0:
-                        avail_variants = avail_variants + 1
-                    total_variants = total_variants + variant['inventory_quantity']
+                    else:
+                        if variant['inventory_quantity'] > 0:
+                            avail_variants = avail_variants + 1
+                        total_variants = total_variants + variant['inventory_quantity']
 
                 availability = 'Available' if product['published_at'] else 'Unavailable'
                 print(product['images'])

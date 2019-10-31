@@ -100,12 +100,6 @@ def ajax_collects():
                 min_price = False
                 varied_price = False
                 for variant in product['variants']:
-                    if not variant['inventory_management']:
-                        no_inventory_management = True
-                        break
-                    if variant['inventory_quantity'] > 0:
-                        avail_variants = avail_variants + 1
-                    total_variants = total_variants + variant['inventory_quantity']
                     # Set price
                     if not min_price:
                         min_price = float(variant['price'])
@@ -113,6 +107,13 @@ def ajax_collects():
                         if float(variant['price']) > min_price:
                             min_price = variant['price']
                             varied_price = True
+                    if not variant['inventory_management']:
+                        no_inventory_management = True
+                        break
+                    if variant['inventory_quantity'] > 0:
+                        avail_variants = avail_variants + 1
+                    total_variants = total_variants + variant['inventory_quantity']
+
                 availability = 'Available' if product['published_at'] else 'Unavailable'
                 print(product['images'])
                 try:

@@ -114,6 +114,7 @@ def ajax_collects():
                             min_price = variant['price']
                             varied_price = True
                 availability = 'Available' if product['published_at'] else 'Unavailable'
+                print(product['images'])
                 try:
                     product_image = product['images'][0]
                 except:

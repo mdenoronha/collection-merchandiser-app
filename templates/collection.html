@@ -371,7 +371,9 @@
             el.find('.show_text__output').text(value.product_title)
             var currency = '{{ shop_currency }}'
             {% raw %}
-            var price = value.product_varied_price ? currency.replace('{{amount}}', value.product_price) + '(Varied)' : currency.replace('{{amount}}', value.product_price) 
+            console.log(value.product_varied_price)
+            console.log(value.product_price)
+            var price = value.product_varied_price ? currency.replace('{{amount}}', value.product_price) + ' (Varied)' : currency.replace('{{amount}}', value.product_price) 
             {% endraw %}
             el.find('.show_price__output').html(price)
 

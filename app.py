@@ -21,8 +21,8 @@ from flask_cors import CORS
 from flask_pymongo import PyMongo
 
 # Redis
-# from rq import Queue, Connection
-# from worker import conn
+from rq import Queue, Connection
+from worker import conn
 from redis import Redis
 from rq_scheduler import Scheduler
 

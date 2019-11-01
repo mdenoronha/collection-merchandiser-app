@@ -1,3 +1,3 @@
-scheduler: python worker.py rqscheduler --queue high
+scheduler: rqscheduler
 worker: python worker.py 
 web: python app.py

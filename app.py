@@ -653,6 +653,9 @@ def updateWebhook():
         }
     }
 
+    print(payload)
+    print(reponse['action'])
+
     if reponse['action'] == 'create':
         
         webhookResponse = requests.post('https://%s/admin/api/2019-07/webhooks.json' % reponse["shop"],

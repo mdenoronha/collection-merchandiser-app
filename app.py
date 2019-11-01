@@ -21,8 +21,8 @@ from flask_cors import CORS
 from flask_pymongo import PyMongo
 
 # Redis
-from rq import Queue, Connection
-from worker import conn
+# from rq import Queue, Connection
+# from worker import conn
 from redis import Redis
 from rq_scheduler import Scheduler
 
@@ -43,8 +43,8 @@ csrf.init_app(app)
 nonce = ''
 
 # Redis test
-redis_conn = Redis()
-q = Queue(connection=conn)
+# redis_conn = Redis()
+# q = Queue(connection=conn)
 
 def randomword(length):
    letters = string.ascii_lowercase
@@ -796,11 +796,11 @@ def product_create_sort():
 
     from queue_work import sort_collection
 
-    # scheduler = Scheduler(connection=Redis())
-    # scheduler.enqueue_in(timedelta(minutes=5), sort_collection, queue_data)
+    scheduler = Scheduler(connection=Redis())
+    scheduler.enqueue_in(timedelta(seconds=5), sort_collection, queue_data)
 
-    job = q.enqueue(sort_collection, queue_data)
-    print(job)
+    # job = q.enqueue(print_data, queue_data)
+    # print(job)
 
     return Response(status=200)
 

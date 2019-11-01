@@ -630,6 +630,7 @@ def automations():
         headers=headers)
 
     webhooks = json.loads(response.text)['webhooks']
+    print(webhooks)
     webhookIds = [webhook['id'] for webhook in webhooks if webhook['topic'] == "products/create"]
 
     return render_template('automations.html', shop=shop, webhookIds=webhookIds, access_token=session.get("access_token"))
@@ -772,6 +773,7 @@ def product_create_sort():
 
     # threading.Thread(target=product_create_sort_work, args=()).start()
 
+    print('webhook received')
 
     data = request.get_data()
     stores = mongo.db.stores

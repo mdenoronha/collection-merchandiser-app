@@ -25,7 +25,7 @@ from flask_pymongo import PyMongo
 # from worker import conn
 from redis import Redis
 from rq_scheduler import Scheduler
-
+from rq import Queue
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get("SECRET")
@@ -796,10 +796,14 @@ def product_create_sort():
 
     from queue_work import sort_collection
 
-    print('one')
-    scheduler = Scheduler(connection=Redis())
-    print('two')
+    # scheduler = Scheduler(connection=Redis())
+
+    queue = Queue('bar', connection=Redis())
+    scheduler = Scheduler(queue=queue)
+    
     scheduler.enqueue_in(timedelta(seconds=5), sort_collection, queue_data)
+
+
 
     # job = q.enqueue(print_data, queue_data)
     # print(job)

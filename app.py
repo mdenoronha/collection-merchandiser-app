@@ -796,7 +796,9 @@ def product_create_sort():
 
     from queue_work import sort_collection
 
+    print('one')
     scheduler = Scheduler(connection=Redis())
+    print('two')
     scheduler.enqueue_in(timedelta(seconds=5), sort_collection, queue_data)
 
     # job = q.enqueue(print_data, queue_data)

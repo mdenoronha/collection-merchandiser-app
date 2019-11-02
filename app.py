@@ -793,7 +793,7 @@ def product_create_sort():
 
     from queue_work import sort_collection
 
-    scheduler = Scheduler(connection=Redis())
+    scheduler = Scheduler(connection=Redis(host='porgy.redistogo.com', port=11667, db=0, password='b8b8ce0e7548ee29c447d4d8eb84c63a'))
     scheduler.enqueue_in(timedelta(seconds=5), sort_collection, queue_data)
 
     # job = q.enqueue(print_data, queue_data)

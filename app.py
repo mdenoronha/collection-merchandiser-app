@@ -25,7 +25,7 @@ from flask_pymongo import PyMongo
 # from worker import conn
 from redis import Redis
 from rq_scheduler import Scheduler
-from rq import Queue
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get("SECRET")
@@ -653,9 +653,6 @@ def updateWebhook():
         }
     }
 
-    print(payload)
-    print(reponse['action'])
-
     if reponse['action'] == 'create':
         
         webhookResponse = requests.post('https://%s/admin/api/2019-07/webhooks.json' % reponse["shop"],
@@ -796,14 +793,8 @@ def product_create_sort():
 
     from queue_work import sort_collection
 
-    # scheduler = Scheduler(connection=Redis())
-
-    queue = Queue('bar', connection=Redis())
-    scheduler = Scheduler(queue=queue)
-    
+    scheduler = Scheduler(connection=Redis())
     scheduler.enqueue_in(timedelta(seconds=5), sort_collection, queue_data)
-
-
 
     # job = q.enqueue(print_data, queue_data)
     # print(job)

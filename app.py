@@ -191,11 +191,7 @@ def loopProducts(all_products, next_endpoint, collection, shop, access_token, pr
             call_limit = response['X-Shopify-Shop-Api-Call-Limit'].split('/')
             if int(call_limit[0]) > 35:
                 time.sleep(34)
-            print("************************")    
-            print('*******', product_to_skip)
-            print(all_products)
-            print(limit)
-            print("************************") 
+                
             return loopProducts(all_products, next_page, collection, shop, access_token, product_to_skip, collection_type, limit)
         else:
             return all_products

@@ -63,7 +63,7 @@ def sort_collection(data):
 	        if collect_reponse['collects']:
 	            collect, = collect_reponse['collects']
 	             # If exists, find all products ids of collection
-	            all_products = loopProductsSmart('', False, collect['collection_id'], shop, access_token, product_id)
+	            all_products = loopProducts('', False, collect['collection_id'], shop, access_token, product_id, 'smart')
 	            # Add product ID to the front
 	            all_products = 'products[]={0}&{1}'.format(product_id, all_products).rstrip('&')
 	            # Sort smart collection
@@ -89,7 +89,7 @@ def sort_collection(data):
 	                    'collects': []
 	                }
 	            }
-	            all_products = loopProductsCustom(all_products_dict, False, collect['collection_id'], request.headers.get('X-Shopify-Shop-Domain'), access_token_response['store']['access_token'], product_id)
+	            all_products = loopProducts(all_products_dict, False, collect['collection_id'], shop, access_token, product_id, 'custom')
 	            # Add collect ID to the front
 	            all_products['custom_collection']['collects'].append({
 	                'id': collect['id'],

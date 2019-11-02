@@ -32,10 +32,9 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get("SECRET")
 SECRET = os.environ.get("SHOPIFY_SECRET")
 
-redistogo = urlparse(os.getenv('REDISTOGO_URL', 'redis://localhost:6379'))
-print("REDISTOGO_URL", redistogo)
-
-redis_pass = os.environ.get("REDIS_PASSWORD")
+redis_pass = os.environ.get("REDIS_PASS")
+redis_host = os.environ.get("REDIS_HOST")
+redis_port = os.environ.get("REDIS_PORT")
 
 # MongoDB
 # REMOVE ****
@@ -799,7 +798,7 @@ def product_create_sort():
 
     from queue_work import sort_collection
 
-    scheduler = Scheduler(connection=Redis(host='porgy.redistogo.com', port=11667, db=0, password=redis_pass))
+    scheduler = Scheduler(connection=Redis(host=redis_host, port=redis_port, db=0, password=redis_pass))
     scheduler.enqueue_in(timedelta(seconds=5), sort_collection, queue_data)
 
     # job = q.enqueue(print_data, queue_data)

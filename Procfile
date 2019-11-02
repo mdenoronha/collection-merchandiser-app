@@ -1,3 +1,3 @@
-scheduler: rqscheduler --host localhost --port 6379 --db 0
 worker: python worker.py 
+python worker.py rqscheduler --queue high
 web: python app.py

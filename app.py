@@ -8,6 +8,7 @@ import string
 import base64
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
+from flask_mail import Mail, Message
 
 import requests
 import json
@@ -34,14 +35,21 @@ redis_pass = os.environ.get("REDIS_PASS")
 redis_host = os.environ.get("REDIS_HOST")
 redis_port = os.environ.get("REDIS_PORT")
 
+# Flask Mail
+app.config['MAIL_SERVER'] = os.environ.get("MAIL_SERVER")
+app.config['MAIL_PORT'] = os.environ.get("MAIL_PORT")
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME")
+app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
+
 # MongoDB
-# REMOVE ****
 CORS(app)
 app.config["MONGO_URI"] = os.environ.get("MONGO_URL")
 mongo = PyMongo(app)
 
 csrf = CSRFProtect()
 csrf.init_app(app)
+mail = Mail(app)
 
 nonce = ''
 
@@ -191,7 +199,7 @@ def loopProducts(all_products, next_endpoint, collection, shop, access_token, pr
             call_limit = response['X-Shopify-Shop-Api-Call-Limit'].split('/')
             if int(call_limit[0]) > 35:
                 time.sleep(34)
-                
+
             return loopProducts(all_products, next_page, collection, shop, access_token, product_to_skip, collection_type, limit)
         else:
             return all_products
@@ -411,12 +419,31 @@ def install():
         return 'Authentication failed. Please contact support at help@matthewdenoronha.com'
 
 # Contact page
-@app.route('/contact', methods=['GET'])
+@app.route('/contact', methods=['GET', 'POST'])
 def contact():
 
     shop = request.args.get("shop")
+    mail_sent = 'invalid'
 
-    return render_template('contact.html', shop=shop)
+    if request.method == "POST":
+        name = request.form['nameFormInput']
+        email = request.form['emailFormInput']
+        message = request.form['messageFormInput']
+
+        msg = Message("Collection merchadiser Email",
+                          sender='collection.merchadiser@gmail.com',
+                          recipients=["help@matthewdenoronha.com"])
+        msg.body = "email:{0} name:{1} message:{2}".format(email, name, message)
+
+        try:
+            mail.send(msg)
+        except Exception as e:
+            print(e.message)
+            mail_sent = 'unsuccessful'
+        else:
+            mail_sent = 'successful'
+
+    return render_template('contact.html', shop=shop, mail_sent=mail_sent)
 
 # Privacy Policy page
 @app.route('/privacy-policy', methods=['GET'])
@@ -472,7 +499,7 @@ def connect():
         return 'Authentication failed. Please contact support at help@matthewdenoronha.com'
 
 # Automations
-@app.route('/automations')
+@app.route('/automations', methods=['GET', 'POST'])
 def automations():
     headers = {
         "X-Shopify-Access-Token": session.get("access_token"),
@@ -482,6 +509,8 @@ def automations():
     # Set up Mongo
     shop = session['shop']
     stores = mongo.db.stores
+    mail_sent = 'invalid'
+
 
     response = requests.get('https://%s/admin/api/2019-07/webhooks.json' % session.get("shop"), 
         headers=headers)
@@ -489,7 +518,25 @@ def automations():
     webhooks = json.loads(response.text)['webhooks']
     webhookIds = [webhook['id'] for webhook in webhooks if webhook['topic'] == "products/create"]
 
-    return render_template('automations.html', shop=shop, webhookIds=webhookIds, access_token=session.get("access_token"))
+    if request.method == "POST":
+        name = request.form['nameFormInput']
+        email = request.form['emailFormInput']
+        message = request.form['messageFormInput']
+
+        msg = Message("Collection merchadiser Email",
+                          sender='collection.merchadiser@gmail.com',
+                          recipients=["help@matthewdenoronha.com"])
+        msg.body = "email:{0} name:{1} message:{2}".format(email, name, message)
+
+        try:
+            mail.send(msg)
+        except Exception as e:
+            print(e.message)
+            mail_sent = 'unsuccessful'
+        else:
+            mail_sent = 'successful'
+
+    return render_template('automations.html', shop=shop, webhookIds=webhookIds, access_token=session.get("access_token"), mail_sent=mail_sent)
     
 @csrf.exempt
 @app.route('/update_webhook', methods=['POST'])
@@ -537,6 +584,13 @@ def updateWebhook():
 def product_create_sort():
 
     data = request.get_data()
+
+    verified = verify_webhook(data, request.headers.get('X-Shopify-Hmac-SHA256'))
+
+    if not verified:
+        print('abort')
+        abort(401)
+
     stores = mongo.db.stores
     shop = request.headers.get('X-Shopify-Shop-Domain')
     product_id = json.loads(request.data)['id']

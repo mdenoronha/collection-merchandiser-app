@@ -17,7 +17,7 @@
     var AppBridge = window['app-bridge'];
     var createApp = AppBridge.default;
     var app = createApp({
-      apiKey: '06508637004c80c9f5f731440fb36242',
+      apiKey: '6f3f5898d1df75bdb86fce83780bfb4b',
       shopOrigin: '{{shop}}',
     });
 
@@ -36,8 +36,9 @@
     const contactButton = Button.create(app, {label: 'Contact'});
     const instructionsButton = Button.create(app, {label: 'Instructions'});
     const privacyButton = Button.create(app, {label: 'Privacy Policy'});
+    const automationsButton = Button.create(app, {label: 'Automations'});
 
-    const groupButton = ButtonGroup.create(app, {label: 'Navigation', buttons: [homeButton, contactButton, instructionsButton, privacyButton]});
+    const groupButton = ButtonGroup.create(app, {label: 'Navigation', buttons: [homeButton, contactButton,automationsButton, instructionsButton, privacyButton]});
     // Secondary buttons actions
     const viewContact = contactButton.subscribe(Button.Action.CLICK, data => {
       redirect.dispatch(Redirect.Action.APP, '/contact');
@@ -50,6 +51,9 @@
     });
     const viewPrivacy = privacyButton.subscribe(Button.Action.CLICK, data => {
       redirect.dispatch(Redirect.Action.APP, '/privacy-policy');
+    });
+    const viewAutomations = automationsButton.subscribe(Button.Action.CLICK, data => {
+      redirect.dispatch(Redirect.Action.APP, '/automations');
     });
 
     // Title bar
@@ -76,12 +80,56 @@
       <div class="card-header">
         Get in Touch
       </div>
+
+      {% if mail_sent == 'unsuccessful' %}
+        <div style="margin: 10px;" class="alert alert-danger" role="alert">
+          <span>Message was not sent successfully. Please contact help@matthewdenoronha.com.</span>
+        </div>
+      {% elif mail_sent == 'successful' %}
+        <div style="margin: 10px;" class="alert alert-success" role="alert">
+          <span>Message was sent successfully. We'll be in touch within 24 working hours.</span>
+        </div>
+      {% endif %}
+
       <div class="card-body">
-        <p class="card-text">Have a feature request, found a bug, just want to say hello. Get in touch using the details below</p>
-        <p class="card-text"><span style="font-weight: bold;">Email:</span> help@matthewdenoronha.com</p>
-        <a href="mailto:help@matthewdenoronha.com?Subject=Hello%20there" target="_top" class="btn btn-primary" style="background-color: #3f4eae; border-color: #3f4eae; cursor: pointer; margin: 10px auto; width: 40%; max-width: 200px; display: block;">Get in touch</a>
+        <p class="card-text">Have a feature request, found a bug, just want to say hello. Get in touch using the form below or via email at help@matthewdenoronha.com</p>
+        <form method="POST">
+          <div class="form-group">
+            <label for="exampleFormControlInput1">Name</label>
+            <input required name="nameFormInput" type="text" class="form-control" id="nameFormInput" placeholder="John Doe">
+          </div>
+          <div class="form-group">
+            <label for="exampleFormControlInput1">Email address</label>
+            <input required type="email" class="form-control" id="emailFormInput" name="emailFormInput" placeholder="name@example.com">
+          </div>
+          <div class="form-group">
+            <label for="exampleFormControlTextarea1">Message</label>
+            <textarea required class="form-control" id="messageFormInput" name="messageFormInput" placeholder="The feature I'd like to see is..." rows="3"></textarea>
+          </div>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button type="submit" class="btn btn-standard">Submit</button>
+        </form>
       </div>
     </div>
+
+    <style>
+
+    body {
+      padding: 10% !important;
+    }
+
+    .btn-standard {
+      background-color: rgb(63, 78, 174);
+      border-color: rgb(63, 78, 174);
+      cursor: pointer;
+      display: block;
+      color: white;
+    }
+
+    .btn:hover {
+      color: white;
+    }
+    </style>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

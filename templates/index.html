@@ -85,8 +85,9 @@
     const contactButton = Button.create(app, {label: 'Contact'});
     const instructionsButton = Button.create(app, {label: 'Instructions'});
     const privacyButton = Button.create(app, {label: 'Privacy Policy'});
+    const automationsButton = Button.create(app, {label: 'Automations'});
 
-    const groupButton = ButtonGroup.create(app, {label: 'Navigation', buttons: [homeButton, contactButton, instructionsButton, privacyButton]});
+    const groupButton = ButtonGroup.create(app, {label: 'Navigation', buttons: [homeButton, contactButton,automationsButton, instructionsButton, privacyButton]});
     // Secondary buttons actions
     const viewContact = contactButton.subscribe(Button.Action.CLICK, data => {
       redirect.dispatch(Redirect.Action.APP, '/contact');
@@ -99,6 +100,9 @@
     });
     const viewPrivacy = privacyButton.subscribe(Button.Action.CLICK, data => {
       redirect.dispatch(Redirect.Action.APP, '/privacy-policy');
+    });
+    const viewAutomations = automationsButton.subscribe(Button.Action.CLICK, data => {
+      redirect.dispatch(Redirect.Action.APP, '/automations');
     });
 
     $(document).ready(function() {

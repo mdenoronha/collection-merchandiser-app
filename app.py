@@ -244,7 +244,7 @@ def ajax_collects():
                     if not min_price:
                         min_price = float(variant['price'])
                     else:
-                        if float(variant['price']) > min_price:
+                        if float(variant['price']) > float(min_price):
                             min_price = variant['price']
                             varied_price = True
                     if not variant['inventory_management']:

@@ -41,6 +41,10 @@ app.config['MAIL_PORT'] = os.environ.get("MAIL_PORT")
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME")
 app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_SAMESITE=None,
+)
 
 # MongoDB
 CORS(app)
@@ -211,7 +215,7 @@ def ajax_collects():
     next_link = request.args.get('next_link', '')
     
     headers = {
-        "X-Shopify-Access-Token": session.get("access_token"),
+        "X-Shopify-Access-Token": request.cookies.get("access_token"),
         "Content-Type": "application/json"
     }
 
@@ -225,7 +229,7 @@ def ajax_collects():
 
     # Retrieve products
     endpoint = "/admin/api/2019-07/products.json?ids=%s" % collect_ids
-    products_response = requests.get("https://{0}{1}".format(session.get("shop"),
+    products_response = requests.get("https://{0}{1}".format(request.cookies.get("shop"),
                                                     endpoint), headers=headers)
     products = json.loads(products_response.text)
 
@@ -286,12 +290,12 @@ def ajax_collects():
 # Get items from specified apiSource
 def returnFromCollection(collection_id, apiSource):
     headers = {
-        "X-Shopify-Access-Token": session.get("access_token"),
+        "X-Shopify-Access-Token": request.cookies.get("access_token"),
         "Content-Type": "application/json"
     }
 
     endpoint = "/admin/api/2019-07/" + apiSource +".json?collection_id=%s&limit=30" % collection_id
-    response = requests.get("https://{0}{1}".format(session.get("shop"),
+    response = requests.get("https://{0}{1}".format(request.cookies.get("shop"),
                                                     endpoint), headers=headers)
 
     response_status = response.status_code
@@ -313,17 +317,17 @@ def collection(collection_id):
     response_status = 'unchanged'
 
     headers = {
-                "X-Shopify-Access-Token": session.get("access_token"),
+                "X-Shopify-Access-Token": request.cookies.get("access_token"),
                 "Content-Type": "application/json"
             }
 
     # Check is smart or custom
     endpoint = '/admin/api/2019-07/smart_collections/{0}.json'.format(collection_id)
-    smart_collections = requests.get("https://{0}{1}".format(session.get("shop"),
+    smart_collections = requests.get("https://{0}{1}".format(request.cookies.get("shop"),
                                                     endpoint), headers=headers)
     if smart_collections.status_code != 200:
         endpoint = '/admin/api/2019-07/custom_collections/{0}.json'.format(collection_id)
-        custom_collections = requests.get("https://{0}{1}".format(session.get("shop"),
+        custom_collections = requests.get("https://{0}{1}".format(request.cookies.get("shop"),
                                                     endpoint), headers=headers)
         if custom_collections.status_code != 200:
             return render_template('error.html')
@@ -357,12 +361,12 @@ def collection(collection_id):
                 }
             }
 
-            response = requests.put("https://" + session.get("shop")
+            response = requests.put("https://" + request.cookies.get("shop")
                                      + "/admin/api/2019-07/custom_collections/" + collection_id + ".json",
                                      data=json.dumps(payload), headers=headers)
         # Sort for smart collection
         else:
-            response = requests.put("https://" + session.get("shop") + '/admin/api/2019-07/smart_collections/' + collection_id + '/order.json?' + request.form["products-switch"]
+            response = requests.put("https://" + request.cookies.get("shop") + '/admin/api/2019-07/smart_collections/' + collection_id + '/order.json?' + request.form["products-switch"]
                 , headers=headers)
 
 
@@ -378,12 +382,12 @@ def collection(collection_id):
 
     # Retrieve products from collects
     endpoint = "/admin/api/2019-07/products.json?ids=%s" % collect_ids
-    products_response = requests.get("https://{0}{1}".format(session.get("shop"),
+    products_response = requests.get("https://{0}{1}".format(request.cookies.get("shop"),
                                                     endpoint), headers=headers)
     products = json.loads(products_response.text)
 
     shop_endpoint = "/admin/api/2019-07/shop.json" 
-    shop_response = requests.get("https://{0}{1}".format(session.get("shop"),
+    shop_response = requests.get("https://{0}{1}".format(request.cookies.get("shop"),
                                                     shop_endpoint), headers=headers)
     shop_json = json.loads(shop_response.text)
     shop_html = BeautifulSoup(shop_json['shop']['money_with_currency_format'])
@@ -488,10 +492,11 @@ def connect():
         if 200 == resp.status_code:
             resp_json = json.loads(resp.text)
 
-            session['access_token'] = resp_json.get("access_token")
-            session['shop'] = request.args.get("shop")
+            index_response = make_response(redirect('home/{0}'.format(request.args.get("shop").replace('.myshopify.com', ''))))
+            index_response.headers.add('Set-Cookie','shop={0}; SameSite=None; Secure'.format(request.args.get("shop")))
+            index_response.headers.add('Set-Cookie','access_token={0}; SameSite=None; Secure'.format(resp_json.get("access_token")))
 
-            return redirect('/home')
+            return index_response
         else:
             print(resp.status_code, resp.text)
             return 'Cannot connect to app. Please contact support at help@matthewdenoronha.com. {}: {}'.format(e.message, e.description)
@@ -502,17 +507,17 @@ def connect():
 @app.route('/automations', methods=['GET', 'POST'])
 def automations():
     headers = {
-        "X-Shopify-Access-Token": session.get("access_token"),
+        "X-Shopify-Access-Token": request.cookies.get("access_token"),
         "Content-Type": "application/json"
     }
 
     # Set up Mongo
-    shop = session['shop']
+    shop = request.cookies.get("shop")
     stores = mongo.db.stores
     mail_sent = 'invalid'
 
 
-    response = requests.get('https://%s/admin/api/2019-07/webhooks.json' % session.get("shop"), 
+    response = requests.get('https://%s/admin/api/2019-07/webhooks.json' % request.cookies.get("shop"), 
         headers=headers)
 
     webhooks = json.loads(response.text)['webhooks']
@@ -536,7 +541,7 @@ def automations():
         else:
             mail_sent = 'successful'
 
-    return render_template('automations.html', shop=shop, webhookIds=webhookIds, access_token=session.get("access_token"), mail_sent=mail_sent)
+    return render_template('automations.html', shop=shop, webhookIds=webhookIds, access_token=request.cookies.get("access_token"), mail_sent=mail_sent)
     
 @csrf.exempt
 @app.route('/update_webhook', methods=['POST'])
@@ -655,7 +660,7 @@ def automationsUpdate():
     response = json.loads(request.data)
 
     stores.find_one_and_update({'store.name': response['shop']}, {
-        '$set': {'store.access_token': session.get("access_token")},
+        '$set': {'store.access_token': request.cookies.get("access_token")},
         '$push': {'store.new_products_automation': {'$each': response['update_payload']
         }}
     }, upsert=True)
@@ -677,13 +682,15 @@ def automationsRetrieve():
 
 # Homepage
 @app.route('/home')
-def index():
+@app.route('/home/<shop>')
+def index(shop=None):
 
-    shop = session['shop']
+    if not shop:
+        shop = request.headers.get('shop')
+    else:
+        shop = '{0}.myshopify.com'.format(shop)
 
     return render_template('index.html', shop=shop)
-
-
 
 
 if __name__ == "__main__":

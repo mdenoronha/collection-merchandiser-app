@@ -687,7 +687,7 @@ def automationsRetrieve():
 def index(shop=None):
 
     if not shop:
-        shop = request.headers.get('shop')
+        shop = request.cookies.get("shop")
     else:
         shop = '{0}.myshopify.com'.format(shop)
 

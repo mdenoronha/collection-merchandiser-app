@@ -311,6 +311,7 @@ def returnFromCollection(collection_id, apiSource):
         return False
 
 # Display products from collection for sort
+@csrf.exempt
 @app.route('/collection/<collection_id>', methods=['GET', 'POST'])
 def collection(collection_id):
 

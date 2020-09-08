@@ -693,6 +693,313 @@ def index(shop=None):
 
     return render_template('index.html', shop=shop)
 
+# V2
+
+# Collection page
+@app.route('/collection-new/<collection_id>', methods=['GET', 'POST'])
+def collectionNew(collection_id):
+
+    from queue_work import testQueue
+
+    collection_data = productsQuery(request.cookies.get("shop"), request.cookies.get("access_token"), collection_id)
+    js_collection_data = (json.dumps(collection_data['js_collection_data'])
+    .replace(u'<', u'\\u003c')
+    .replace(u'>', u'\\u003e')
+    .replace(u'&', u'\\u0026')
+    .replace(u"'", u'\\u0027'))
+
+    return render_template('collection-new.html', 
+        collection_data=js_collection_data, 
+        error=collection_data['error'], 
+        cursor=collection_data['cursor'], 
+        next_page=collection_data['next_page'], 
+        collection_id=collection_id, 
+        shop=request.cookies.get("shop")
+    )
+
+# Collection page ajax
+@app.route('/collection-new-load', methods=['GET', 'POST'])
+def collectionNewLoad():
+
+    cursor = request.args.get('cursor', '')
+    collection_id = request.args.get('collectionId', '')
+    all_products = []
+    
+    
+    # SORT THIS
+    # Go through range, add products to all_products
+    # rerun with new cursor, override all collection_data (remove data), add products to all_products again
+    # Return
+    for i in range(10):
+        collection_data = productsQuery(request.cookies.get("shop"), request.cookies.get("access_token"), collection_id, cursor)
+        all_products = all_products + collection_data['js_collection_data']['data']['collection']['products']['edges']
+        if collection_data['next_page'] == False or collection_data['error'] != None: 
+            break
+        cursor = collection_data['cursor']
+
+    collection_data['js_collection_data'] = (json.dumps(all_products)
+        .replace(u'<', u'\\u003c')
+        .replace(u'>', u'\\u003e')
+        .replace(u'&', u'\\u0026')
+        .replace(u"'", u'\\u0027'))
+
+    return {'data': collection_data}
+
+@app.route('/collection-new-save', methods=['GET', 'POST'])
+def collectionNewSave():
+
+    changes = request.args.get('changes', '')
+    collection_id = request.args.get('collectionId', '')
+    shop = request.cookies.get("shop")
+    access_token = request.cookies.get("access_token")
+
+    # TODO: Change to queue
+    reorder_data = reorderQuery(shop, access_token, collection_id, changes)
+
+    return {'data': reorder_data}
+
+
+def reorderQuery(shop, access_token, collection_id, changes, rerun_count=0):
+
+    error = ''
+    reorder_status = graphql.reorderProducts(shop, access_token, collection_id, json.loads(changes))
+    js_reorder_status = (json.dumps(reorder_status)
+        .replace(u'<', u'\\u003c')
+        .replace(u'>', u'\\u003e')
+        .replace(u'&', u'\\u0026')
+        .replace(u"'", u'\\u0027'))
+    
+    if 'errors' in reorder_status:
+        if len(reorder_status['errors']) > 0:
+            error = reorder_status['errors'][0]['message']
+            # Waits and reruns function if throttled 
+            if error == 'Throttled' and rerun_count < 10:
+                required_time = findWaitTime(reorder_status['extensions'])
+                time.sleep(required_time)
+                return reorderQuery(shop, access_token, collection_id, changes, rerun_count+1)
+
+    return {
+        'error': error
+    }
+
+
+def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0):
+
+    error = ''
+    next_page = False
+    collection_data = graphql.queryProducts(shop, access_token, collection_id, cursor)
+    js_collection_data = collection_data
+
+    # TODO: Need collection sort method
+
+    if 'errors' in collection_data:
+        if len(collection_data['errors']) > 0:
+            error = collection_data['errors'][0]['message']
+            # Waits and reruns function if throttled 
+            if error == 'Throttled' and rerun_count < 10:
+                required_time = findWaitTime(collection_data['extensions'])
+                time.sleep(required_time)
+                return productsQuery(shop, access_token, collection_id, cursor, rerun_count+1)
+
+    try:
+        last_product = collection_data['data']['collection']['products']['edges'][len(collection_data['data']['collection']['products']['edges']) - 1]
+        cursor = last_product['cursor']
+        next_page = collection_data['data']['collection']['products']['pageInfo']['hasNextPage']
+    except:
+        print('Error getting cursor')
+
+    return {
+        'js_collection_data': js_collection_data,
+        'error': error,
+        'cursor': cursor,
+        'next_page': next_page
+    }
+
+def productsCollectionsQuery(shop, access_token, product_id, collections_skip_list, cursor=None, rerun_count=0):
+
+  error = ''
+  next_page = False
+  collections = []
+  product_data = graphql.queryCollectionsOfProducts(shop, access_token, product_id, cursor)
+
+  if 'errors' in product_data:
+      if len(product_data['errors']) > 0:
+          error = product_data['errors'][0]['message']
+          # Waits and reruns function if throttled 
+          if error == 'Throttled' and rerun_count < 10:
+              required_time = findWaitTime(product_data['extensions'])
+              time.sleep(required_time)
+              return productsCollectionsQuery(shop, access_token, product_id, collections_skip_list, cursor, rerun_count+1)
+
+  # Get cursor and next page
+  try:
+      last_collection = product_data['data']['product']['collections']['edges'][len(product_data['data']['product']['collections']['edges']) - 1]
+      cursor = last_collection['cursor']
+      next_page = product_data['data']['product']['collections']['pageInfo']['hasNextPage']
+  except:
+    print('Error getting cursor')
+
+  if not 'errors' in product_data:
+    for collection in product_data['data']['product']['collections']['edges']:
+      if collection['node']['sortOrder'] == 'MANUAL' and not collection['node']['id'] in collections_skip_list:
+        collections.append({ 
+            'id': collection['node']['id'],
+            'moves': {
+              'id': 'gid://shopify/Product/{0}'.format(product_id),
+              # Change to zero for top
+              'newPosition': str(collection['node']['productsCount'])
+            }
+          })
+
+  return {
+        'collections': collections,
+        'error': error,
+        'cursor': cursor,
+        'next_page': next_page
+    }
+
+def findWaitTime(extensions):
+
+    requested_cost = extensions['cost']['requestedQueryCost']
+    currently_available = extensions['cost']['throttleStatus']['currentlyAvailable']
+    restore_rate = extensions['cost']['throttleStatus']['restoreRate']
+
+    required_time = -(currently_available - requested_cost) / restore_rate
+    if 0 > required_time: 
+        required_time = 0
+
+    return True
+
+# Auto Basic
+@app.route('/auto-smart', methods=['GET', 'POST'])
+def autoSmart():
+
+  shop = request.cookies.get("shop")
+  access_token = request.cookies.get("access_token")
+  stores = mongo.db.local_stores
+  rules = stores.find_one({'store.name': shop})
+  if rules:
+    oos = rules['store']['rules']['outOfStock'] if 'outOfStock' in rules['store']['rules'] else []
+    inventory = rules['store']['rules']['customInventory'] if 'customInventory' in rules['store']['rules'] else []
+    date = rules['store']['rules']['createdDate'] if 'createdDate' in rules['store']['rules'] else []
+
+  return render_template('auto_smart.html', shop=shop, access_token=access_token, oos=oos if oos else [], inventory=inventory if inventory else [], date=date if date else [])
+
+@csrf.exempt
+@app.route('/post-auto-smart', methods=['POST'])
+def postAutoSmart():
+
+    response = request.get_json()
+    # Set up Mongo
+    
+    stores = mongo.db.local_stores
+       
+    store = stores.find_one({'local_stores.name': response['shop']})
+    if store != None:
+      if response['access'] != store['store']['access_token']:
+        return json.dumps({'status': 'Authentication Failed'}), 500, {'ContentType':'application/json'} 
+
+    try:
+      stores.find_one_and_update({'store.name': response['shop']}, {
+          '$set': {'store.access_token': response['access'], 'store.rules': response['rules']},
+      }, upsert=True)
+      return json.dumps({'status': 'Automations Updated Successfully'}), 200, {'ContentType':'application/json'} 
+    except (e):
+      return json.dumps({'status': 'Something Went Wrong, Please Try Again'}), 500, {'ContentType':'application/json'} 
+
+    return json.dumps({'status': 'Something Went Wrong, Please Try Again'}), 500, {'ContentType':'application/json'} 
+
+
+def autoBasicRules():
+
+  # Get all products
+  shop = 'learning-development-store.myshopify.com' 
+  access_token = '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'
+  products = [
+    {
+      'id': '4727648714788',
+      'totalInvetory': 0
+    },
+    {
+      'id': '1403965603876',
+      'totalInvetory': 0
+    },
+    {
+      'id': '1403965571108',
+      'totalInvetory': 0
+    }
+  ]
+  collections_skip_list = ['gid://shopify/Collection/52792852516']
+  rules = [
+    {
+      'check': 'totalInvetory',
+      'comparison': '<=',
+      'value': 0,
+      # actions: bottom, top, hide
+      'action': 'bottom'
+    }
+  ]
+  collections = {}
+  # A check that runs change sort order if collections is getting to big
+  runAndRefresh = False
+
+  # Get all rules
+  # Loop products
+  for product in products:
+
+    # Reset collections if movements needed are large
+    if runAndRefresh:
+      runAndRefresh = False
+      # For collection that needs products moved
+      for collection in collections:
+        reorderQuery(shop, access_token, collection, json.dumps(collections[collection]), 0)
+        # reorderStatus = reorderQuery(shop, access_token, collection, json.dumps(collections[collection]), 0)
+        # if reorderStatus['error'] != None:
+      collections = {}
+
+    # Loop rules
+    for rule in rules:
+      # If breaks rule
+      if checkRule(product, rule):
+        # For collections of products
+        for collection in autoBasicRuleWork(shop, access_token, product['id'], collections_skip_list, None):
+          # Add to master collections list
+          if not collection['id'] in collections:
+            collections[collection['id']] = []
+          collections[collection['id']].append(collection['moves'])
+          # If products to move is over 240
+          if len(collections[collection['id']]) > 200:
+            runAndRefresh = True
+        break
+
+  for collection in collections:
+    reorderQuery(shop, access_token, collection, json.dumps(collections[collection]), 0)
+
+  return True
+
+def autoBasicRuleWork(shop, access_token, product_id, collections_skip_list, cursor):
+
+  collections = []
+  products_data = productsCollectionsQuery(shop, access_token, product_id, collections_skip_list, cursor, 0)
+  if products_data['error'] != None:
+    collections = collections + products_data['collections']
+    if products_data['next_page']:
+      collections = collections + autoBasicRuleWork(shop, access_token, product_id, collections_skip_list, products_data['cursor'])
+
+  return collections
+
+
+def checkRule(product, rule):
+
+  valueToCheck = product[rule['check']]
+  ruleBreak = False
+  try:
+    ruleBreak = eval('{0}{1}{2}'.format(valueToCheck,rule['comparison'],rule['value']))
+  except: 
+    print('Eval failed')
+
+  return ruleBreak
+
 
 if __name__ == "__main__":
     app.run(host=os.environ.get("IP"), port=int(os.environ.get("PORT")), debug=True)

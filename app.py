@@ -26,6 +26,9 @@ from flask_pymongo import PyMongo
 from redis import Redis
 from rq_scheduler import Scheduler
 
+#GraphQL
+import graphql
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get("SECRET")

@@ -209,7 +209,7 @@ def loopProducts(all_products, next_endpoint, collection, shop, access_token, pr
             return all_products
 
 # Get products and collects through AJAX
-@app.route('/ajax-collects', methods=['GET', 'POST'])
+@app.routae('/ajax-collects', methods=['GET', 'POST'])
 def ajax_collects():
 
     next_link = request.args.get('next_link', '')
@@ -699,7 +699,7 @@ def index(shop=None):
 @app.route('/collection-new/<collection_id>', methods=['GET', 'POST'])
 def collectionNew(collection_id):
 
-    from queue_work import testQueue
+    # from queue_work import testQueue
 
     collection_data = productsQuery(request.cookies.get("shop"), request.cookies.get("access_token"), collection_id)
     js_collection_data = (json.dumps(collection_data['js_collection_data'])

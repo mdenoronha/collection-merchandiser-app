@@ -408,10 +408,11 @@
 	    	if(positionChanges != [] && positionChanges) {
 	    		// https://stackoverflow.com/questions/8495687/split-array-into-chunks
 	    		// Split changes into chunks of 120
-	    		var i,j,temparray,chunk = 130;
+	    		var i,j,temparray,chunk = 120;
 	    		for (i=0, j=positionChanges.length; i<j; i+=chunk) {
 	    		    temparray = positionChanges.slice(i,i+chunk);
 	    		    last = !(i+chunk < j);
+	    		    // TODO: Return fail/success and stop if failed
 	    		    submitChanges(temparray, last, positionChanges.length)
 	    		}
 	    	} else {
@@ -422,12 +423,12 @@
 	    function submitChanges(positionChanges, last, totalChanges) {
 	    	$.ajax({
 	    	  url: 'https://shopify-stock-app.herokuapp.com/collection-new-save',
-	    	  type: 'GET',
-	    	  data: { 
-	    	  	'changes' : JSON.stringify(positionChanges),
-	    	    'csrfmiddlewaretoken': '{{csrf_token() }}',
+	    	  type: 'POST',
+	    	  contentType: 'application/json;charset=UTF-8',
+	    	  data: JSON.stringify({ 
+	    	  	'changes' : positionChanges,
 	    	    'collectionId': '{{collection_id}}',
-	    	   },
+	    	   }),
 	    	})
 	    	.done(function(res) {
 	    		// TODO: If certain size, say it's been scheduled and to come back

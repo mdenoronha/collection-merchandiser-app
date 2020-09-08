@@ -748,13 +748,17 @@ def collectionNewLoad():
 
     return {'data': collection_data}
 
+# TODO: Remove exemption
+@csrf.exempt
 @app.route('/collection-new-save', methods=['GET', 'POST'])
 def collectionNewSave():
+    json_data = json.loads(request.data)
 
-    changes = request.args.get('changes', '')
-    collection_id = request.args.get('collectionId', '')
+    changes = json_data.get('changes')
+    collection_id = json_data.get('collectionId')
     shop = request.cookies.get("shop")
     access_token = request.cookies.get("access_token")
+    print(collection_id, changes)
 
     # TODO: Change to queue
     reorder_data = reorderQuery(shop, access_token, collection_id, changes)
@@ -765,7 +769,7 @@ def collectionNewSave():
 def reorderQuery(shop, access_token, collection_id, changes, rerun_count=0):
 
     error = ''
-    reorder_status = graphql.reorderProducts(shop, access_token, collection_id, json.loads(changes))
+    reorder_status = graphql.reorderProducts(shop, access_token, collection_id, changes)
     js_reorder_status = (json.dumps(reorder_status)
         .replace(u'<', u'\\u003c')
         .replace(u'>', u'\\u003e')

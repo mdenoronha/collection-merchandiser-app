@@ -671,8 +671,8 @@
 					save.set({disabled: false});
 				}
 				sortable.sort(begArray.concat(endArray));
+				console.log('one')
 				initLoading('stop')
-				// TODO: Add completed message
 			}
 
 			inventoryNumSort() {
@@ -710,6 +710,7 @@
 				}
 				let fullArray = inventoryCountSelect == 'bottom' ? begArray.concat(endArray) : endArray.concat(begArray)
 				window.sortable.sort(fullArray);
+				console.log('two')
 				initLoading('stop');
 				// TODO: Add completed message
 			}
@@ -755,6 +756,7 @@
 				}
 				let fullArray = createdDateSelect == 'bottom' ? begArray.concat(endArray) : endArray.concat(begArray)
 				window.sortable.sort(fullArray);
+				console.log('three')
 				initLoading('stop')
 				// TODO: Add completed message
 			}
@@ -1105,6 +1107,7 @@
 			} catch(e) {
 				console.log(e);
 			}
+			console.log('four')
 			initLoading('stop');
 		}
 
@@ -1117,7 +1120,7 @@
 			}
 			document.querySelector('#products__container').innerHTML += productsToAdd;
 
-			if(!callback) { initLoading('stop'); }
+			if(!callback) { console.log('five') initLoading('stop'); }
 			// If not init call
 			updateDisplayInfo(displayOptions);
 			initSortable(callback);

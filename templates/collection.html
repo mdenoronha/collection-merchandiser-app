@@ -236,9 +236,9 @@
     const viewPrivacy = privacyButton.subscribe(Button.Action.CLICK, data => {
       redirect.dispatch(Redirect.Action.APP, '/privacy-policy');
     });
-    const viewAutomations = automationsButton.subscribe(Button.Action.CLICK, data => {
-      redirect.dispatch(Redirect.Action.APP, '/automations');
-    });
+    // const viewAutomations = automationsButton.subscribe(Button.Action.CLICK, data => {
+    //   redirect.dispatch(Redirect.Action.APP, '/automations');
+    // });
 
     const titleBarOptions = {
       title: 'Collection',

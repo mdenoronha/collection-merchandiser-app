@@ -433,6 +433,7 @@
 	    		// TODO: If certain size, say it's been scheduled and to come back
 	    		try {
 	    			if(res['data']['error']) {
+	    				console.log(res['data']['error'])
 	    				showMessage('Error', 'Unexpected error. Some or all of the sorting has not been completed successfully. Please try again or contact support if this issue persists');
 	    			} else {
 	    				if(last) {

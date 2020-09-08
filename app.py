@@ -209,7 +209,7 @@ def loopProducts(all_products, next_endpoint, collection, shop, access_token, pr
             return all_products
 
 # Get products and collects through AJAX
-@app.routae('/ajax-collects', methods=['GET', 'POST'])
+@app.route('/ajax-collects', methods=['GET', 'POST'])
 def ajax_collects():
 
     next_link = request.args.get('next_link', '')

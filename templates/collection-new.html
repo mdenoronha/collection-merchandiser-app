@@ -1120,7 +1120,9 @@
 			}
 			document.querySelector('#products__container').innerHTML += productsToAdd;
 
-			if(!callback) { console.log('five') initLoading('stop'); }
+			if(!callback) { 
+				console.log('five'); 
+				initLoading('stop'); }
 			// If not init call
 			updateDisplayInfo(displayOptions);
 			initSortable(callback);

@@ -28,8 +28,8 @@
         <div class="col-md-8">
           <div class="card-body">
             <h5 id="collection-name" class="card-title">Choose a Collection</h5>
-            <div id="manual-update" class="alert alert-warning" role="alert" style="display: none">
-              This collection is not sorted manually. While you will be able to view product information, you will not be able to sort.
+            <div id="manual-update" class="alert alert-danger" role="alert" style="display: none">
+              This collection is not sorted manually. <a id="collection-admin-link" href="" target="_blank" >Change the sort order to manual</a> in order to make changes.
             </div>
             <p id="collection-description" class="card-text"></p>
             <p id="collection-link" data-collection="" class="btn disabled btn-primary" style="background-color: #3f4eae; border-color: #3f4eae; cursor: pointer; display: none;">Start</p>
@@ -93,7 +93,7 @@
       redirect.dispatch(Redirect.Action.APP, '/contact');
     });
     const homeContact = homeButton.subscribe(Button.Action.CLICK, data => {
-      redirect.dispatch(Redirect.Action.APP, '/home');
+      redirect.dispatch(Redirect.Action.APP, '/home/{{shop | replace(".myshopify.com", "")}}');
     });
     const viewInstructions = instructionsButton.subscribe(Button.Action.CLICK, data => {
       redirect.dispatch(Redirect.Action.APP, '/instructions');
@@ -148,11 +148,13 @@
         $('#collection-image').attr('src', '{{url_for('static', filename='imgs/placeholder.png')}}') 
       }
       if(selection[0].sortOrder != "MANUAL") {
-        $('#manual-update').css('display', 'block')
+        $('#manual-update').css('display', 'block');
+        $('#collection-link').attr('data-collection', id).addClass('disabled').css('display', 'none');
+        $('#collection-admin-link').attr('href', `https://{{shop}}/admin/collections/${id}`);
       } else {
-        $('#manual-update').css('display', 'hide')
+        $('#manual-update').css('display', 'none');
+        $('#collection-link').attr('data-collection', id).removeClass('disabled').css('display', 'block');
       }
-      $('#collection-link').attr('data-collection', id).removeClass('disabled').css('display', 'block')
     });
 
     $('#collection-link').on('click', function() {

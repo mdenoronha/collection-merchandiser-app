@@ -157,7 +157,7 @@
 
     $('#collection-link').on('click', function() {
       if(!$(this).hasClass('disabled')) {
-        redirect.dispatch(Redirect.Action.APP, '/collection/' + $(this).data('collection'));
+        redirect.dispatch(Redirect.Action.APP, '/collection-new/' + $(this).data('collection'));
       }
     })
     </script>

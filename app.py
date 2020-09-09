@@ -114,102 +114,102 @@ def extract_next_link(link):
     return link, next_active
 
 # Check is smart or custom and has manual sort order
-def checkCollection(collection_id, shop, headers):
+# def checkCollection(collection_id, shop, headers):
 
-    # Check is smart or custom
-    endpoint = '/admin/api/2019-07/smart_collections/{0}.json'.format(collection_id)
-    smart_collections = requests.get("https://{0}{1}".format(shop,
-                                                    endpoint), headers=headers)
-    if smart_collections.status_code != 200:
-        endpoint = '/admin/api/2019-07/custom_collections/{0}.json'.format(collection_id)
-        custom_collections = requests.get("https://{0}{1}".format(shop,
-                                                    endpoint), headers=headers)
-        if custom_collections.status_code != 200:
-            return 'Error: Failed collection retrieval'
-        else:
-            custom_collection = True
-            manual_sort_order = False
-            collection = json.loads(custom_collections.text)
-            if collection['custom_collection']['sort_order'] == 'manual':
-                manual_sort_order = True
-    else:
-        custom_collection = False
-        manual_sort_order = False
-        collection = json.loads(smart_collections.text)
-        if collection['smart_collection']['sort_order'] == 'manual':
-            manual_sort_order = True
+#     # Check is smart or custom
+#     endpoint = '/admin/api/2019-07/smart_collections/{0}.json'.format(collection_id)
+#     smart_collections = requests.get("https://{0}{1}".format(shop,
+#                                                     endpoint), headers=headers)
+#     if smart_collections.status_code != 200:
+#         endpoint = '/admin/api/2019-07/custom_collections/{0}.json'.format(collection_id)
+#         custom_collections = requests.get("https://{0}{1}".format(shop,
+#                                                     endpoint), headers=headers)
+#         if custom_collections.status_code != 200:
+#             return 'Error: Failed collection retrieval'
+#         else:
+#             custom_collection = True
+#             manual_sort_order = False
+#             collection = json.loads(custom_collections.text)
+#             if collection['custom_collection']['sort_order'] == 'manual':
+#                 manual_sort_order = True
+#     else:
+#         custom_collection = False
+#         manual_sort_order = False
+#         collection = json.loads(smart_collections.text)
+#         if collection['smart_collection']['sort_order'] == 'manual':
+#             manual_sort_order = True
 
-    return {
-       'custom_collection': custom_collection,
-       'manual_sort_order': manual_sort_order
-    }
+#     return {
+#        'custom_collection': custom_collection,
+#        'manual_sort_order': manual_sort_order
+#     }
 
-def loopProducts(all_products, next_endpoint, collection, shop, access_token, product_to_skip, collection_type, limit=0):
-    # Add limitation for first 5 pages
-    if limit == 4:
-        return all_products
+# def loopProducts(all_products, next_endpoint, collection, shop, access_token, product_to_skip, collection_type, limit=0):
+#     # Add limitation for first 5 pages
+#     if limit == 4:
+#         return all_products
 
-    headers = {
-        "X-Shopify-Access-Token": access_token,
-        "Content-Type": "application/json"
-    }
+#     headers = {
+#         "X-Shopify-Access-Token": access_token,
+#         "Content-Type": "application/json"
+#     }
 
-    if not next_endpoint:
-        endpoint = '/admin/api/2019-10/collects.json?collection_id=%s' % collection
-    else:
-        endpoint = next_endpoint
+#     if not next_endpoint:
+#         endpoint = '/admin/api/2019-10/collects.json?collection_id=%s' % collection
+#     else:
+#         endpoint = next_endpoint
 
-    collects_response = requests.get("https://{0}{1}".format(shop, endpoint), headers=headers)
-    collects = json.loads(collects_response.text)
+#     collects_response = requests.get("https://{0}{1}".format(shop, endpoint), headers=headers)
+#     collects = json.loads(collects_response.text)
 
-    if not collects_response.ok:
-        return all_products
-    try:
-        response = collects_response.headers
-        response['link']
-    except:
-        for collect in collects['collects']:
-            if collect['product_id'] != product_to_skip:
-                if collection_type == 'custom':
-                    position = len(all_products['custom_collection']['collects']) + 2
-                    all_products['custom_collection']['collects'].append({
-                            'id': collect['id'],
-                            'position': position
-                        })
-                else:
-                    all_products = all_products + 'products[]=%s&' % collect['product_id']
+#     if not collects_response.ok:
+#         return all_products
+#     try:
+#         response = collects_response.headers
+#         response['link']
+#     except:
+#         for collect in collects['collects']:
+#             if collect['product_id'] != product_to_skip:
+#                 if collection_type == 'custom':
+#                     position = len(all_products['custom_collection']['collects']) + 2
+#                     all_products['custom_collection']['collects'].append({
+#                             'id': collect['id'],
+#                             'position': position
+#                         })
+#                 else:
+#                     all_products = all_products + 'products[]=%s&' % collect['product_id']
 
-        return all_products
-    else:
-        for collect in collects['collects']:
-            if collection_type == 'custom':
-                position = len(all_products['custom_collection']['collects']) + 2
-                all_products['custom_collection']['collects'].append({
-                            'id': collect['id'],
-                            'position': position
-                        })
-            else:
-                all_products = all_products + 'products[]=%s&' % collect['product_id']
+#         return all_products
+#     else:
+#         for collect in collects['collects']:
+#             if collection_type == 'custom':
+#                 position = len(all_products['custom_collection']['collects']) + 2
+#                 all_products['custom_collection']['collects'].append({
+#                             'id': collect['id'],
+#                             'position': position
+#                         })
+#             else:
+#                 all_products = all_products + 'products[]=%s&' % collect['product_id']
 
-        pagination = requests.utils.parse_header_links(response['link'].rstrip('>').replace('>,<', ',<'))
+#         pagination = requests.utils.parse_header_links(response['link'].rstrip('>').replace('>,<', ',<'))
 
-        # Are there more pages?
-        next_true = False
-        for url in pagination:
-            if url['rel'] == 'next':
-                next_true = True
-                break
+#         # Are there more pages?
+#         next_true = False
+#         for url in pagination:
+#             if url['rel'] == 'next':
+#                 next_true = True
+#                 break
 
-        if next_true:
-            next_page = url['url'].replace('https://%s' % shop, '')
-            limit += 1
-            call_limit = response['X-Shopify-Shop-Api-Call-Limit'].split('/')
-            if int(call_limit[0]) > 35:
-                time.sleep(34)
+#         if next_true:
+#             next_page = url['url'].replace('https://%s' % shop, '')
+#             limit += 1
+#             call_limit = response['X-Shopify-Shop-Api-Call-Limit'].split('/')
+#             if int(call_limit[0]) > 35:
+#                 time.sleep(34)
 
-            return loopProducts(all_products, next_page, collection, shop, access_token, product_to_skip, collection_type, limit)
-        else:
-            return all_products
+#             return loopProducts(all_products, next_page, collection, shop, access_token, product_to_skip, collection_type, limit)
+#         else:
+#             return all_products
 
 # Get products and collects through AJAX
 @app.route('/ajax-collects', methods=['GET', 'POST'])
@@ -592,35 +592,35 @@ def updateWebhook():
 @app.route('/products/create', methods=['POST'])
 def product_create_sort():
 
-    data = request.get_data()
+    # data = request.get_data()
 
-    verified = verify_webhook(data, request.headers.get('X-Shopify-Hmac-SHA256'))
+    # verified = verify_webhook(data, request.headers.get('X-Shopify-Hmac-SHA256'))
 
-    if not verified:
-        print('abort')
-        abort(401)
+    # if not verified:
+    #     print('abort')
+    #     abort(401)
 
-    stores = mongo.db.stores
-    shop = request.headers.get('X-Shopify-Shop-Domain')
-    product_id = json.loads(request.data)['id']
-    access_token_response = stores.find_one({'store.name': request.headers.get('X-Shopify-Shop-Domain')}, {'store.access_token': 1})
-    access_token = access_token_response['store']['access_token']
-    collections = stores.find_one({'store.name': shop})
-    collectionIds = collections['store']['new_products_automation']
+    # stores = mongo.db.stores
+    # shop = request.headers.get('X-Shopify-Shop-Domain')
+    # product_id = json.loads(request.data)['id']
+    # access_token_response = stores.find_one({'store.name': request.headers.get('X-Shopify-Shop-Domain')}, {'store.access_token': 1})
+    # access_token = access_token_response['store']['access_token']
+    # collections = stores.find_one({'store.name': shop})
+    # collectionIds = collections['store']['new_products_automation']
 
-    queue_data = {
-        'collectionId': collectionIds,
-        'shop': shop,
-        'product_id': product_id,
-        'access_token': access_token
-    }
+    # queue_data = {
+    #     'collectionId': collectionIds,
+    #     'shop': shop,
+    #     'product_id': product_id,
+    #     'access_token': access_token
+    # }
 
-    from queue_work import sort_collection
+    # from queue_work import sort_collection
 
-    scheduler = Scheduler(connection=Redis(host=redis_host, port=redis_port, db=0, password=redis_pass))
-    scheduler.enqueue_in(timedelta(minutes=5), sort_collection, queue_data)
+    # scheduler = Scheduler(connection=Redis(host=redis_host, port=redis_port, db=0, password=redis_pass))
+    # scheduler.enqueue_in(timedelta(minutes=5), sort_collection, queue_data)
 
-    return Response(status=200)
+    return Response(status=500)
 
 @csrf.exempt
 @app.route('/collections/update', methods=['POST'])

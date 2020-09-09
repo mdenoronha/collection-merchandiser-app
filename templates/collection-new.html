@@ -501,6 +501,7 @@
 		  	this.storeUrl = product.onlineStoreUrl;
 		  	this.createdDate = product.createdAt;
 		  	this.id = product.id;
+		  	window['productCount'] = window['productCount'] || 0;
 		  }
 
 		  get element() {
@@ -512,9 +513,10 @@
 		  	let cardImage = this.featuredImage ? `<img src="${this.featuredImage}" class="card-img-top">` : '';
 		  	let cardHeader;
 		  	let cardTop = `
-			  				<div data-product-id="${this.id}" data-positon="${productNum}" class="products__card ${this.storeUrl ? '' : 'products__unavailable'}" style="width: ${window['rows'] || '20%'};">
+			  				<div data-product-id="${this.id}" data-positon="${window['productCount']}" class="products__card ${this.storeUrl ? '' : 'products__unavailable'}" style="width: ${window['rows'] || '20%'};">
 			  					<div class="card">`;
 
+			window['productCount']++
 			return cardTop + cardImage;
 		  }
 

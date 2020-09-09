@@ -87,7 +87,7 @@
     const privacyButton = Button.create(app, {label: 'Privacy Policy'});
     const automationsButton = Button.create(app, {label: 'Automations'});
 
-    const groupButton = ButtonGroup.create(app, {label: 'Navigation', buttons: [homeButton, contactButton,automationsButton, instructionsButton, privacyButton]});
+    const groupButton = ButtonGroup.create(app, {label: 'Navigation', buttons: [homeButton, contactButton, instructionsButton, privacyButton]});
     // Secondary buttons actions
     const viewContact = contactButton.subscribe(Button.Action.CLICK, data => {
       redirect.dispatch(Redirect.Action.APP, '/contact');

@@ -671,7 +671,6 @@
 					save.set({disabled: false});
 				}
 				sortable.sort(begArray.concat(endArray));
-				console.log('one')
 				initLoading('stop')
 			}
 
@@ -710,7 +709,6 @@
 				}
 				let fullArray = inventoryCountSelect == 'bottom' ? begArray.concat(endArray) : endArray.concat(begArray)
 				window.sortable.sort(fullArray);
-				console.log('two')
 				initLoading('stop');
 				// TODO: Add completed message
 			}
@@ -756,7 +754,6 @@
 				}
 				let fullArray = createdDateSelect == 'bottom' ? begArray.concat(endArray) : endArray.concat(begArray)
 				window.sortable.sort(fullArray);
-				console.log('three')
 				initLoading('stop')
 				// TODO: Add completed message
 			}
@@ -1098,7 +1095,6 @@
 
 		function disableLoadMore() {
 			try { 
-				initLoading('start');
 				window.sortable.option('disabled', false); 
 				document.querySelector('#load-more').setAttribute('disabled', true);
 				document.querySelector('#load-all').setAttribute('disabled', true);
@@ -1107,8 +1103,6 @@
 			} catch(e) {
 				console.log(e);
 			}
-			console.log('four')
-			initLoading('stop');
 		}
 
 		function createCards(elements, callback=null) {
@@ -1120,9 +1114,7 @@
 			}
 			document.querySelector('#products__container').innerHTML += productsToAdd;
 
-			if(!callback) { 
-				console.log('five'); 
-				initLoading('stop'); }
+			if(!callback) { initLoading('stop'); }
 			// If not init call
 			updateDisplayInfo(displayOptions);
 			initSortable(callback);
@@ -1167,7 +1159,6 @@
 				})
 				.done(function(res) {
 					products = JSON.parse(res['data']['js_collection_data'])
-					console.log(products)
 					window.responses.push(products);
 					if(res['data']['error']) {
 						// TODO: Error
@@ -1178,7 +1169,6 @@
 								document.querySelector('#load-more').setAttribute('data-next-link', res['data']['cursor']);
 						} else {
 							if(res['data']['next_page']) { 
-								console.log('hi')
 								document.querySelector('#load-more').setAttribute('data-next-link', res['data']['cursor']); 
 								document.querySelector('#load-more').removeAttribute('disabled');
 								document.querySelector('#load-all').removeAttribute('disabled');

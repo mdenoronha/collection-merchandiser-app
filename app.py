@@ -113,6 +113,12 @@ def extract_next_link(link):
         
     return link, next_active
 
+def getShop(request):
+
+  shop = request.cookies.get("shop") if request.cookies.get("shop") != None else request.args.get("shop")
+
+  return shop
+
 # Check is smart or custom and has manual sort order
 # def checkCollection(collection_id, shop, headers):
 
@@ -232,7 +238,7 @@ def ajax_collects():
 
     # Retrieve products
     endpoint = "/admin/api/2019-07/products.json?ids=%s" % collect_ids
-    products_response = requests.get("https://{0}{1}".format(request.cookies.get("shop"),
+    products_response = requests.get("https://{0}{1}".format(getShop(request),
                                                     endpoint), headers=headers)
     products = json.loads(products_response.text)
 
@@ -298,7 +304,7 @@ def returnFromCollection(collection_id, apiSource):
     }
 
     endpoint = "/admin/api/2019-07/" + apiSource +".json?collection_id=%s&limit=30" % collection_id
-    response = requests.get("https://{0}{1}".format(request.cookies.get("shop"),
+    response = requests.get("https://{0}{1}".format(getShop(request),
                                                     endpoint), headers=headers)
 
     response_status = response.status_code
@@ -327,11 +333,11 @@ def collection(collection_id):
 
     # Check is smart or custom
     endpoint = '/admin/api/2019-07/smart_collections/{0}.json'.format(collection_id)
-    smart_collections = requests.get("https://{0}{1}".format(request.cookies.get("shop"),
+    smart_collections = requests.get("https://{0}{1}".format(getShop(request),
                                                     endpoint), headers=headers)
     if smart_collections.status_code != 200:
         endpoint = '/admin/api/2019-07/custom_collections/{0}.json'.format(collection_id)
-        custom_collections = requests.get("https://{0}{1}".format(request.cookies.get("shop"),
+        custom_collections = requests.get("https://{0}{1}".format(getShop(request),
                                                     endpoint), headers=headers)
         if custom_collections.status_code != 200:
             return render_template('error.html')
@@ -365,12 +371,12 @@ def collection(collection_id):
                 }
             }
 
-            response = requests.put("https://" + request.cookies.get("shop")
+            response = requests.put("https://" + getShop(request)
                                      + "/admin/api/2019-07/custom_collections/" + collection_id + ".json",
                                      data=json.dumps(payload), headers=headers)
         # Sort for smart collection
         else:
-            response = requests.put("https://" + request.cookies.get("shop") + '/admin/api/2019-07/smart_collections/' + collection_id + '/order.json?' + request.form["products-switch"]
+            response = requests.put("https://" + getShop(request) + '/admin/api/2019-07/smart_collections/' + collection_id + '/order.json?' + request.form["products-switch"]
                 , headers=headers)
 
 
@@ -386,12 +392,12 @@ def collection(collection_id):
 
     # Retrieve products from collects
     endpoint = "/admin/api/2019-07/products.json?ids=%s" % collect_ids
-    products_response = requests.get("https://{0}{1}".format(request.cookies.get("shop"),
+    products_response = requests.get("https://{0}{1}".format(getShop(request),
                                                     endpoint), headers=headers)
     products = json.loads(products_response.text)
 
     shop_endpoint = "/admin/api/2019-07/shop.json" 
-    shop_response = requests.get("https://{0}{1}".format(request.cookies.get("shop"),
+    shop_response = requests.get("https://{0}{1}".format(getShop(request),
                                                     shop_endpoint), headers=headers)
     shop_json = json.loads(shop_response.text)
     shop_html = BeautifulSoup(shop_json['shop']['money_with_currency_format'])
@@ -516,12 +522,12 @@ def automations():
     }
 
     # Set up Mongo
-    shop = request.cookies.get("shop")
+    shop = getShop(request)
     stores = mongo.db.stores
     mail_sent = 'invalid'
 
 
-    response = requests.get('https://%s/admin/api/2019-07/webhooks.json' % request.cookies.get("shop"), 
+    response = requests.get('https://%s/admin/api/2019-07/webhooks.json' % getShop(request), 
         headers=headers)
 
     webhooks = json.loads(response.text)['webhooks']
@@ -690,7 +696,7 @@ def automationsRetrieve():
 def index(shop=None):
 
     if not shop:
-        shop = request.cookies.get("shop")
+        shop = getShop(request)
     else:
         shop = '{0}.myshopify.com'.format(shop)
 
@@ -704,7 +710,7 @@ def collectionNew(collection_id):
 
     # from queue_work import testQueue
 
-    collection_data = productsQuery(request.cookies.get("shop"), request.cookies.get("access_token"), collection_id)
+    collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id)
     js_collection_data = (json.dumps(collection_data['js_collection_data'])
     .replace(u'<', u'\\u003c')
     .replace(u'>', u'\\u003e')
@@ -717,7 +723,7 @@ def collectionNew(collection_id):
         cursor=collection_data['cursor'], 
         next_page=collection_data['next_page'], 
         collection_id=collection_id, 
-        shop=request.cookies.get("shop")
+        shop=getShop(request)
     )
 
 # Collection page ajax
@@ -734,7 +740,7 @@ def collectionNewLoad():
     # rerun with new cursor, override all collection_data (remove data), add products to all_products again
     # Return
     for i in range(10):
-        collection_data = productsQuery(request.cookies.get("shop"), request.cookies.get("access_token"), collection_id, cursor)
+        collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, cursor)
         all_products = all_products + collection_data['js_collection_data']['data']['collection']['products']['edges']
         if collection_data['next_page'] == False or collection_data['error'] != None: 
             break
@@ -756,7 +762,7 @@ def collectionNewSave():
 
     changes = json_data.get('changes')
     collection_id = json_data.get('collectionId')
-    shop = request.cookies.get("shop")
+    shop = getShop(request)
     access_token = request.cookies.get("access_token")
     print(collection_id, changes)
 
@@ -881,7 +887,7 @@ def findWaitTime(extensions):
 @app.route('/auto-smart', methods=['GET', 'POST'])
 def autoSmart():
 
-  shop = request.cookies.get("shop")
+  shop = getShop(request)
   access_token = request.cookies.get("access_token")
   stores = mongo.db.local_stores
   rules = stores.find_one({'store.name': shop})

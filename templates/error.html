@@ -1,91 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Collection Merchandiser</title>
-
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
-
-    <script script src="https://unpkg.com/@shopify/app-bridge"></script>
-
-    <script type="text/javascript">
-    // Init
-    var AppBridge = window['app-bridge'];
-    var createApp = AppBridge.default;
-    var app = createApp({
-      apiKey: '06508637004c80c9f5f731440fb36242',
-      shopOrigin: '{{shop}}',
-    });
-
-    var AppBridge = window['app-bridge'];
-    var actions = AppBridge.actions;
-    var Button = actions.Button;
-    var ButtonGroup = actions.ButtonGroup;
-    var Redirect = actions.Redirect;
-    var TitleBar = actions.TitleBar;
-
-    // Init redirect
-    const redirect = Redirect.create(app);
-
-    // Secondary buttons
-    const homeButton = Button.create(app, {label: 'Home'});
-    const contactButton = Button.create(app, {label: 'Contact'});
-    const instructionsButton = Button.create(app, {label: 'Instructions'});
-    const privacyButton = Button.create(app, {label: 'Privacy Policy'});
-    const automationsButton = Button.create(app, {label: 'Automations'});
-
-    const groupButton = ButtonGroup.create(app, {label: 'Navigation', buttons: [homeButton, contactButton, instructionsButton, privacyButton]});
-    // Secondary buttons actions
-    const viewContact = contactButton.subscribe(Button.Action.CLICK, data => {
-      redirect.dispatch(Redirect.Action.APP, '/contact');
-    });
-    const homeContact = homeButton.subscribe(Button.Action.CLICK, data => {
-      redirect.dispatch(Redirect.Action.APP, '/home');
-    });
-    const viewInstructions = instructionsButton.subscribe(Button.Action.CLICK, data => {
-      redirect.dispatch(Redirect.Action.APP, '/instructions');
-    });
-    const viewPrivacy = privacyButton.subscribe(Button.Action.CLICK, data => {
-      redirect.dispatch(Redirect.Action.APP, '/privacy-policy');
-    });
-    // const viewAutomations = automationsButton.subscribe(Button.Action.CLICK, data => {
-    //   redirect.dispatch(Redirect.Action.APP, '/automations');
-    // });
-
-    // Title bar
-    const titleBarOptions = {
-      title: 'Error',
-      buttons: {
-        secondary: [groupButton]
-      },
-    };
-    const myTitleBar = TitleBar.create(app, titleBarOptions);
-    </script>
-
-
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.2/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-  </head>
-  <body style="margin: 0 auto; padding:10%; background-color: #F4F6F8;">
-    <h1>Error</h1>
-    <div class="card">
-      <div class="card-body">
-        <p class="card-text">The app has encoutered an error. Please contact support for more information</p>
-        <p class="card-text"><span style="font-weight: bold;">Email:</span> help@matthewdenoronha.com</p>
-      </div>
+{% extends 'layout.html' %}
+{% block content %}
+  <h1>Error</h1>
+  <div class="card">
+    <div class="card-body">
+      <p class="card-text">The app has encoutered an error. Please contact support for more information</p>
+      <p class="card-text"><span style="font-weight: bold;">Email:</span> help@matthewdenoronha.com</p>
     </div>
-
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-  </body>
-</html>
+  </div>
+{% endblock %}

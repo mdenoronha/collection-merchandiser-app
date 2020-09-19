@@ -1,0 +1,300 @@
+
+/* SECTION */
+/* Global */
+
+body {
+	margin: 0 auto; 
+	padding: 10%; 
+	background-color: #F4F6F8;
+}
+
+body#collection {
+	padding: 2%; 
+}
+
+.hide {
+	display: none !important;
+}
+
+#full-screen-overlay.full-screen-overlay--active {
+	top: 0;
+	width: 100vw;
+	height: 100vh;
+	position: fixed;
+	background: #0000006b;
+	left: 0;
+	z-index: 1;
+}
+
+#full-screen-overlay {
+	height: 0;
+	width: 0;
+	overflow: hidden;
+}
+
+.btn-primary {
+	background-color: #3f4eae; 
+	border-color: #3f4eae; 
+	cursor: pointer; 
+}
+
+.small-button:disabled,
+.small-button {
+	background-color: #3f4eae; 
+	border-color: #3f4eae; 
+	cursor: pointer; 
+	margin: 10px auto; 
+	width: 50%; 
+	max-width: 400px; 
+	display: block;
+}
+
+.small-button p {
+	margin: 0;
+}
+
+/* Switch */
+/* Provided by https://www.w3schools.com/howto/howto_css_switch.asp */
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+.inline-input {
+	display: inline;
+	width: 75px;
+}
+
+.inline-input-medium {
+	display: inline;
+	width: 175px;
+}
+
+
+/* Provided by loading.io */
+@keyframes ldio-t1tprsvy82 {
+  0% { transform: translate(-50%,-50%) rotate(0deg); }
+  100% { transform: translate(-50%,-50%) rotate(360deg); }
+}
+
+.full-screen-overlay--active .loadingio-spinner-rolling-hk0ecpc78o4 {
+	position: fixed;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.ldio-t1tprsvy82 div {
+  position: absolute;
+  width: 86px;
+  height: 86px;
+  border: 6px solid white;
+  border-top-color: transparent;
+  border-radius: 50%;
+}
+.ldio-t1tprsvy82 div {
+  animation: ldio-t1tprsvy82 0.8s linear infinite;
+  top: 100px;
+  left: 100px
+}
+.loadingio-spinner-rolling-hk0ecpc78o4 {
+  width: 200px;
+  height: 200px;
+  display: inline-block;
+  overflow: hidden;
+  background: none;
+}
+.ldio-t1tprsvy82 {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform: translateZ(0) scale(1);
+  backface-visibility: hidden;
+  transform-origin: 0 0;
+}
+.ldio-t1tprsvy82 div { box-sizing: content-box; }
+
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.wrapped-badge {
+  word-wrap: break-word;  
+  white-space: unset;
+}
+
+/* SECTION */
+/* Automations */
+
+.automations__card-header .edit-icon {
+	font-size: 1.2em;
+}
+
+.automations__rule-limit {
+	display: none;
+}
+
+.automation__add.disabled .automations__rule-limit {
+	display: inherit;
+}
+
+.auto-smart .dropdown {
+	float: right;
+}
+
+.automations__exclude-container h5,
+.automations__rules-container .card-title {
+	text-align: left;
+}
+
+.auto-smart .btn-secondary {
+	background-color: #3f4eae;
+}
+
+.automations__exclude-container .badge-secondary {
+	margin-right: 10px;
+	background-color: #3f4eae;
+}
+
+.automations__exclude-container .exclude-badge {
+	background-color: #50568d;
+}
+
+.automations__exclude-container
+.automation__add,
+.exclude-delete-icon {
+	cursor: pointer;
+}
+
+.exclude-add:hover,
+.exclude-delete-icon:hover {
+	opacity: 0.8;
+}
+
+/* SECTION */
+/* Collection */
+
+#products__container {
+	background-color: #F4F1F1;
+	width: 100%;
+}
+
+.products__card {
+	margin: 10px 0;
+	padding: 0 10px;
+}
+
+.products__card .card {
+	min-height: 100%;
+}
+
+.products__card p {
+	margin-bottom: 3px;
+}
+
+.product__price {
+	font-size: 0.8em;
+	color: grey;
+}
+
+.multiple-sortable-selected.sortable-ghost .card,
+.sortable-ghost .card {
+	border: dashed 1px green;
+	opacity: 0.4 !important;
+}
+
+.multiple-sortable-selected .card {
+	border: 1px solid green;
+}
+
+.card-display-off {
+	opacity: 0.4;
+}
+
+.accordian-title {
+	cursor: pointer;
+}
+
+.sort-title {
+	margin: 0;
+	color: #828282;
+	font-weight: bold;
+}
+
+/* SECTION */
+/* Home */
+
+.alert-instructions #instructions-alert-close {
+	display: none; 
+	float: right;
+}
+
+.alert-instructions #instructions-alert-redirect {
+	text-decoration: underline;     
+	cursor: pointer;
+}
+
+#collection-image {
+	max-height: 1000px;
+}
+
+#manual-update {
+	display: none;
+}
+
+

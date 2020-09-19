@@ -119,183 +119,6 @@ def getShop(request):
 
   return shop
 
-# Check is smart or custom and has manual sort order
-# def checkCollection(collection_id, shop, headers):
-
-#     # Check is smart or custom
-#     endpoint = '/admin/api/2019-07/smart_collections/{0}.json'.format(collection_id)
-#     smart_collections = requests.get("https://{0}{1}".format(shop,
-#                                                     endpoint), headers=headers)
-#     if smart_collections.status_code != 200:
-#         endpoint = '/admin/api/2019-07/custom_collections/{0}.json'.format(collection_id)
-#         custom_collections = requests.get("https://{0}{1}".format(shop,
-#                                                     endpoint), headers=headers)
-#         if custom_collections.status_code != 200:
-#             return 'Error: Failed collection retrieval'
-#         else:
-#             custom_collection = True
-#             manual_sort_order = False
-#             collection = json.loads(custom_collections.text)
-#             if collection['custom_collection']['sort_order'] == 'manual':
-#                 manual_sort_order = True
-#     else:
-#         custom_collection = False
-#         manual_sort_order = False
-#         collection = json.loads(smart_collections.text)
-#         if collection['smart_collection']['sort_order'] == 'manual':
-#             manual_sort_order = True
-
-#     return {
-#        'custom_collection': custom_collection,
-#        'manual_sort_order': manual_sort_order
-#     }
-
-# def loopProducts(all_products, next_endpoint, collection, shop, access_token, product_to_skip, collection_type, limit=0):
-#     # Add limitation for first 5 pages
-#     if limit == 4:
-#         return all_products
-
-#     headers = {
-#         "X-Shopify-Access-Token": access_token,
-#         "Content-Type": "application/json"
-#     }
-
-#     if not next_endpoint:
-#         endpoint = '/admin/api/2019-10/collects.json?collection_id=%s' % collection
-#     else:
-#         endpoint = next_endpoint
-
-#     collects_response = requests.get("https://{0}{1}".format(shop, endpoint), headers=headers)
-#     collects = json.loads(collects_response.text)
-
-#     if not collects_response.ok:
-#         return all_products
-#     try:
-#         response = collects_response.headers
-#         response['link']
-#     except:
-#         for collect in collects['collects']:
-#             if collect['product_id'] != product_to_skip:
-#                 if collection_type == 'custom':
-#                     position = len(all_products['custom_collection']['collects']) + 2
-#                     all_products['custom_collection']['collects'].append({
-#                             'id': collect['id'],
-#                             'position': position
-#                         })
-#                 else:
-#                     all_products = all_products + 'products[]=%s&' % collect['product_id']
-
-#         return all_products
-#     else:
-#         for collect in collects['collects']:
-#             if collection_type == 'custom':
-#                 position = len(all_products['custom_collection']['collects']) + 2
-#                 all_products['custom_collection']['collects'].append({
-#                             'id': collect['id'],
-#                             'position': position
-#                         })
-#             else:
-#                 all_products = all_products + 'products[]=%s&' % collect['product_id']
-
-#         pagination = requests.utils.parse_header_links(response['link'].rstrip('>').replace('>,<', ',<'))
-
-#         # Are there more pages?
-#         next_true = False
-#         for url in pagination:
-#             if url['rel'] == 'next':
-#                 next_true = True
-#                 break
-
-#         if next_true:
-#             next_page = url['url'].replace('https://%s' % shop, '')
-#             limit += 1
-#             call_limit = response['X-Shopify-Shop-Api-Call-Limit'].split('/')
-#             if int(call_limit[0]) > 35:
-#                 time.sleep(34)
-
-#             return loopProducts(all_products, next_page, collection, shop, access_token, product_to_skip, collection_type, limit)
-#         else:
-#             return all_products
-
-# Get products and collects through AJAX
-@app.route('/ajax-collects', methods=['GET', 'POST'])
-def ajax_collects():
-
-    next_link = request.args.get('next_link', '')
-    
-    headers = {
-        "X-Shopify-Access-Token": request.cookies.get("access_token"),
-        "Content-Type": "application/json"
-    }
-
-    response = requests.get(next_link, headers=headers)
-    next_link = response.headers['link']
-    collects = json.loads(response.text)
-
-    collect_ids = ''
-    for collect in collects['collects']:
-        collect_ids = collect_ids + str(collect['product_id']) + ','
-
-    # Retrieve products
-    endpoint = "/admin/api/2019-07/products.json?ids=%s" % collect_ids
-    products_response = requests.get("https://{0}{1}".format(getShop(request),
-                                                    endpoint), headers=headers)
-    products = json.loads(products_response.text)
-
-    # Create dict of product information to create cards on collection page
-    collect_products = {}
-    for counter, collect in enumerate(collects['collects']):
-        for product in products['products']:
-            if product['id'] == collect['product_id']:
-                total_variants = 0
-                avail_variants = 0
-                no_inventory_management = False
-                min_price = False
-                varied_price = False
-                for variant in product['variants']:
-                    # Set price
-                    if not min_price:
-                        min_price = float(variant['price'])
-                    else:
-                        if float(variant['price']) > float(min_price):
-                            min_price = variant['price']
-                            varied_price = True
-                    if not variant['inventory_management']:
-                        no_inventory_management = True
-                    else:
-                        if variant['inventory_quantity'] > 0:
-                            avail_variants = avail_variants + 1
-                        total_variants = total_variants + variant['inventory_quantity']
-
-                availability = 'Available' if product['published_at'] else 'Unavailable'
-                try:
-                    product_image = product['images'][0]
-                except:
-                    product_image = ''
-                temp_product_collect = {
-                    'product_id': product['id'],
-                    'collect_id': collect['id'],
-                    'position': collect['position'],
-                    'product_title': product['title'],
-                    'product_image': product_image,
-                    'product_available': availability,
-                    'product_price': min_price,
-                    'product_varied_price': varied_price,
-                    'no_inventory_management': no_inventory_management,
-                    'total_variants': total_variants,
-                    'avail_variants': avail_variants / len(product['variants'])
-                }
-
-                collect_products[counter] = temp_product_collect
-
-    next_link, next_active = extract_next_link(next_link)
-
-    return {
-        'next_link': next_link,
-        'collect_products': collect_products,
-        'next_active': next_active
-    }   
-
 # Get items from specified apiSource
 def returnFromCollection(collection_id, apiSource):
     headers = {
@@ -319,96 +142,6 @@ def returnFromCollection(collection_id, apiSource):
     else: 
         return False
 
-# Display products from collection for sort
-@csrf.exempt
-@app.route('/collection/<collection_id>', methods=['GET', 'POST'])
-def collection(collection_id):
-
-    response_status = 'unchanged'
-
-    headers = {
-                "X-Shopify-Access-Token": request.cookies.get("access_token"),
-                "Content-Type": "application/json"
-            }
-
-    # Check is smart or custom
-    endpoint = '/admin/api/2019-07/smart_collections/{0}.json'.format(collection_id)
-    smart_collections = requests.get("https://{0}{1}".format(getShop(request),
-                                                    endpoint), headers=headers)
-    if smart_collections.status_code != 200:
-        endpoint = '/admin/api/2019-07/custom_collections/{0}.json'.format(collection_id)
-        custom_collections = requests.get("https://{0}{1}".format(getShop(request),
-                                                    endpoint), headers=headers)
-        if custom_collections.status_code != 200:
-            return render_template('error.html')
-        else:
-            custom_collection = True
-            manual_sort_order = False
-            collection = json.loads(custom_collections.text)
-            if collection['custom_collection']['sort_order'] == 'manual':
-                manual_sort_order = True
-    else:
-        custom_collection = False
-        manual_sort_order = False
-        collection = json.loads(smart_collections.text)
-        if collection['smart_collection']['sort_order'] == 'manual':
-            manual_sort_order = True
-
-    # On POST of sorted products
-    if request.method == "POST":
-
-        # Sort for custom collection
-        if custom_collection:
-            positionsArray = []
-            positions = request.form["products-switch"].split(';')
-            for position in positions:
-                positionAndId = position.split(',')
-                positionsArray.append({"id": int(positionAndId[0]), "position": int(positionAndId[1])})
-
-            payload = {  'custom_collection':
-                {"id": collection_id,   
-                "collects": positionsArray
-                }
-            }
-
-            response = requests.put("https://" + getShop(request)
-                                     + "/admin/api/2019-07/custom_collections/" + collection_id + ".json",
-                                     data=json.dumps(payload), headers=headers)
-        # Sort for smart collection
-        else:
-            response = requests.put("https://" + getShop(request) + '/admin/api/2019-07/smart_collections/' + collection_id + '/order.json?' + request.form["products-switch"]
-                , headers=headers)
-
-
-        response_status = response.status_code
-
-    # Retrieve collects from collection
-    collects, next_link = returnFromCollection(collection_id, 'collects')
-    next_link, next_active = extract_next_link(next_link)
-
-    collect_ids = ''
-    for collect in collects['collects']:
-        collect_ids = collect_ids + str(collect['product_id']) + ','
-
-    # Retrieve products from collects
-    endpoint = "/admin/api/2019-07/products.json?ids=%s" % collect_ids
-    products_response = requests.get("https://{0}{1}".format(getShop(request),
-                                                    endpoint), headers=headers)
-    products = json.loads(products_response.text)
-
-    shop_endpoint = "/admin/api/2019-07/shop.json" 
-    shop_response = requests.get("https://{0}{1}".format(getShop(request),
-                                                    shop_endpoint), headers=headers)
-    shop_json = json.loads(shop_response.text)
-    shop_html = BeautifulSoup(shop_json['shop']['money_with_currency_format'])
-    shop_currency = shop_html.text
-
-    shop = request.args.get("shop")
-
-    if collects and products:
-        return render_template('collection.html', collects=collects, products=products.get("products"), response_status=response_status, custom_collection=custom_collection, manual_sort_order=manual_sort_order, next_link=next_link, next_active=next_active, shop=shop, shop_currency=shop_currency)
-    else:
-        return redirect('/error')
 
 @app.route('/error', methods=['GET'])
 def error():
@@ -431,6 +164,44 @@ def install():
         return render_template('install.html', nonce=nonce, shop=shop)
     else:
         return 'Authentication failed. Please contact support at help@matthewdenoronha.com'
+
+        # Connect page
+        @app.route('/connect', methods=['GET'])
+        def connect():
+
+            # get nonce
+            nonce_value = request.args.get("state")
+
+            # get hostname
+            shop = request.args.get("shop")
+
+            # Carry out oauth verification
+            if authenticate_hmac(request) and nonce_value == nonce and validators.domain(shop) and shop.endswith('myshopify.com'):
+                params = {
+                    "client_id": os.environ.get("SHOPIFY_KEY"),
+                    "client_secret": os.environ.get("SHOPIFY_SECRET"),
+                    "code": request.args.get("code")
+                }
+                resp = requests.post(
+                    "https://{0}/admin/oauth/access_token".format(
+                        request.args.get("shop")
+                        ),
+                    data=params
+                    )
+
+                if 200 == resp.status_code:
+                    resp_json = json.loads(resp.text)
+
+                    index_response = make_response(redirect('home/{0}'.format(request.args.get("shop").replace('.myshopify.com', ''))))
+                    index_response.headers.add('Set-Cookie','shop={0}; SameSite=None; Secure'.format(request.args.get("shop")))
+                    index_response.headers.add('Set-Cookie','access_token={0}; SameSite=None; Secure'.format(resp_json.get("access_token")))
+
+                    return index_response
+                else:
+                    print(resp.status_code, resp.text)
+                    return 'Cannot connect to app. Please contact support at help@matthewdenoronha.com. {}: {}'.format(e.message, e.description)
+            else:
+                return 'Authentication failed. Please contact support at help@matthewdenoronha.com'
 
 # Contact page
 @app.route('/contact', methods=['GET', 'POST'])
@@ -475,241 +246,37 @@ def instructions():
 
     return render_template('instructions.html', shop=shop)
 
-# Connect page
-@app.route('/connect', methods=['GET'])
-def connect():
 
-    # get nonce
-    nonce_value = request.args.get("state")
-
-    # get hostname
-    shop = request.args.get("shop")
-
-    # Carry out oauth verification
-    if authenticate_hmac(request) and nonce_value == nonce and validators.domain(shop) and shop.endswith('myshopify.com'):
-        params = {
-            "client_id": os.environ.get("SHOPIFY_KEY"),
-            "client_secret": os.environ.get("SHOPIFY_SECRET"),
-            "code": request.args.get("code")
-        }
-        resp = requests.post(
-            "https://{0}/admin/oauth/access_token".format(
-                request.args.get("shop")
-                ),
-            data=params
-            )
-
-        if 200 == resp.status_code:
-            resp_json = json.loads(resp.text)
-
-            index_response = make_response(redirect('home/{0}'.format(request.args.get("shop").replace('.myshopify.com', ''))))
-            index_response.headers.add('Set-Cookie','shop={0}; SameSite=None; Secure'.format(request.args.get("shop")))
-            index_response.headers.add('Set-Cookie','access_token={0}; SameSite=None; Secure'.format(resp_json.get("access_token")))
-
-            return index_response
-        else:
-            print(resp.status_code, resp.text)
-            return 'Cannot connect to app. Please contact support at help@matthewdenoronha.com. {}: {}'.format(e.message, e.description)
-    else:
-        return 'Authentication failed. Please contact support at help@matthewdenoronha.com'
-
-# Automations
-@app.route('/automations', methods=['GET', 'POST'])
-def automations():
-    headers = {
-        "X-Shopify-Access-Token": request.cookies.get("access_token"),
-        "Content-Type": "application/json"
-    }
-
-    # Set up Mongo
-    shop = getShop(request)
-    stores = mongo.db.stores
-    mail_sent = 'invalid'
-
-
-    response = requests.get('https://%s/admin/api/2019-07/webhooks.json' % getShop(request), 
-        headers=headers)
-
-    webhooks = json.loads(response.text)['webhooks']
-    webhookIds = [webhook['id'] for webhook in webhooks if webhook['topic'] == "products/create"]
-
-    if request.method == "POST":
-        name = request.form['nameFormInput']
-        email = request.form['emailFormInput']
-        message = request.form['messageFormInput']
-
-        msg = Message("Collection merchadiser Email",
-                          sender='collection.merchadiser@gmail.com',
-                          recipients=["help@matthewdenoronha.com"])
-        msg.body = "email:{0} name:{1} message:{2}".format(email, name, message)
-
-        try:
-            mail.send(msg)
-        except Exception as e:
-            print(e.message)
-            mail_sent = 'unsuccessful'
-        else:
-            mail_sent = 'successful'
-
-    return render_template('automations.html', shop=shop, webhookIds=webhookIds, access_token=request.cookies.get("access_token"), mail_sent=mail_sent)
-    
-@csrf.exempt
-@app.route('/update_webhook', methods=['POST'])
-def updateWebhook():
-
-    reponse = json.loads(request.data)
-    headers = {
-        "X-Shopify-Access-Token": reponse["access_token"],
-        "Content-Type": "application/json"
-    }
-
-    payload = {
-        "webhook": {
-        "topic": reponse["webhook"],
-        "address": '{0}/{1}'.format(os.environ.get("HOST"), reponse["webhook"]),
-        "format": "json"
-        }
-    }
-
-    if reponse['action'] == 'create':
-        
-        webhookResponse = requests.post('https://%s/admin/api/2019-07/webhooks.json' % reponse["shop"],
-            data=json.dumps(payload), headers=headers)
-
-    elif reponse['action'] == 'delete':
-        webhookIdCheckReponse = requests.get('https://%s/admin/api/2019-07/webhooks.json' % reponse["shop"], 
-            headers=headers)
-
-        webhookIdChecks = json.loads(webhookIdCheckReponse.text)['webhooks']
-        webhookIdList = [webhook['id'] for webhook in webhookIdChecks if webhook['topic'] == reponse["webhook"]]
-
-        try:
-            webhookResponse = requests.delete('https://{0}/admin/api/2019-07/webhooks/{1}.json'.format(reponse["shop"], webhookIdList[0]),
-                data=json.dumps(payload), headers=headers)
-        except:
-            return Response(status=200)
-
-    response = requests.get('https://%s/admin/api/2019-07/webhooks.json' % reponse["shop"], 
-        headers=headers)
-
-    return Response(status=200)
-
+# Deprecated
 @csrf.exempt
 @app.route('/products/create', methods=['POST'])
 def product_create_sort():
 
-    # data = request.get_data()
-
     # verified = verify_webhook(data, request.headers.get('X-Shopify-Hmac-SHA256'))
-
-    # if not verified:
-    #     print('abort')
-    #     abort(401)
-
-    # stores = mongo.db.stores
-    # shop = request.headers.get('X-Shopify-Shop-Domain')
-    # product_id = json.loads(request.data)['id']
-    # access_token_response = stores.find_one({'store.name': request.headers.get('X-Shopify-Shop-Domain')}, {'store.access_token': 1})
-    # access_token = access_token_response['store']['access_token']
-    # collections = stores.find_one({'store.name': shop})
-    # collectionIds = collections['store']['new_products_automation']
-
-    # queue_data = {
-    #     'collectionId': collectionIds,
-    #     'shop': shop,
-    #     'product_id': product_id,
-    #     'access_token': access_token
-    # }
-
-    # from queue_work import sort_collection
-
-    # scheduler = Scheduler(connection=Redis(host=redis_host, port=redis_port, db=0, password=redis_pass))
-    # scheduler.enqueue_in(timedelta(minutes=5), sort_collection, queue_data)
 
     return Response(status=500)
 
-@csrf.exempt
-@app.route('/collections/update', methods=['POST'])
-def collection_update_sort():
-
-    data = request.get_data()
-    verified = verify_webhook(data, request.headers.get('X-Shopify-Hmac-SHA256'))
-
-    if not verified:
-        print('abort')
-        abort(401)
-
-    collection_id = json.loads(request.data)['id']
-
-    return Response(status=200)
-
-    
-@csrf.exempt
-@app.route('/automations_delete', methods=['POST'])
-def automationsDelete():
-
-    # Set up Mongo
-    stores = mongo.db.stores
-
-    response = json.loads(request.data)
-    stores.update(
-        {'store.name': response['shop']},
-        {'$pull': {'store.%s' % response['automation']: {'handle': str(response['collectionHandle'])}}}
-    )
-
-    # update
-    return Response(status=200)
-
-@csrf.exempt
-@app.route('/automations_update', methods=['POST'])
-def automationsUpdate():
-
-    # Set up Mongo
-    stores = mongo.db.stores
-
-    response = json.loads(request.data)
-
-    stores.find_one_and_update({'store.name': response['shop']}, {
-        '$set': {'store.access_token': request.cookies.get("access_token")},
-        '$push': {'store.new_products_automation': {'$each': response['update_payload']
-        }}
-    }, upsert=True)
-
-    # update
-    return Response(status=200)
-
-
-@app.route('/automations_retrieve', methods=['GET'])
-def automationsRetrieve():
-
-    # Set up Mongo
-    stores = mongo.db.stores
-    
-    response = request.args.to_dict()
-
-    collections = stores.find_one({'store.name': response['shop']})
-    return {'data': collections['store'][response['automation']]}
 
 # Homepage
 @app.route('/home')
 @app.route('/home/<shop>')
 def index(shop=None):
 
-    if not shop:
-        shop = getShop(request)
-    else:
-        shop = '{0}.myshopify.com'.format(shop)
+  if not shop:
+      shop = request.args.get("shop")
+  else:
+      shop = '{0}.myshopify.com'.format(shop)
 
-    return render_template('index.html', shop=shop)
+  resp = make_response(render_template('index.html', shop=shop))
 
-# V2
+  return resp
+
 
 # Collection page
 @app.route('/collection-new/<collection_id>', methods=['GET', 'POST'])
 def collectionNew(collection_id):
 
     # from queue_work import testQueue
-
     collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id)
     js_collection_data = (json.dumps(collection_data['js_collection_data'])
     .replace(u'<', u'\\u003c')
@@ -717,7 +284,7 @@ def collectionNew(collection_id):
     .replace(u'&', u'\\u0026')
     .replace(u"'", u'\\u0027'))
 
-    return render_template('collection-new.html', 
+    return render_template('collection.html', 
         collection_data=js_collection_data, 
         error=collection_data['error'], 
         cursor=collection_data['cursor'], 
@@ -734,11 +301,6 @@ def collectionNewLoad():
     collection_id = request.args.get('collectionId', '')
     all_products = []
     
-    
-    # SORT THIS
-    # Go through range, add products to all_products
-    # rerun with new cursor, override all collection_data (remove data), add products to all_products again
-    # Return
     for i in range(10):
         collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, cursor)
         all_products = all_products + collection_data['js_collection_data']['data']['collection']['products']['edges']
@@ -754,7 +316,6 @@ def collectionNewLoad():
 
     return {'data': collection_data}
 
-# TODO: Remove exemption
 @csrf.exempt
 @app.route('/collection-new-save', methods=['GET', 'POST'])
 def collectionNewSave():
@@ -771,6 +332,7 @@ def collectionNewSave():
 
     return {'data': reorder_data}
 
+# Sort Functions
 
 def reorderQuery(shop, access_token, collection_id, changes, rerun_count=0):
 
@@ -795,15 +357,12 @@ def reorderQuery(shop, access_token, collection_id, changes, rerun_count=0):
         'error': error
     }
 
-
 def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0):
 
     error = ''
     next_page = False
     collection_data = graphql.queryProducts(shop, access_token, collection_id, cursor)
     js_collection_data = collection_data
-
-    # TODO: Need collection sort method
 
     if 'errors' in collection_data:
         if len(collection_data['errors']) > 0:
@@ -883,7 +442,7 @@ def findWaitTime(extensions):
 
     return True
 
-# Auto Basic
+# Auto sort
 @app.route('/auto-smart', methods=['GET', 'POST'])
 def autoSmart():
 
@@ -922,7 +481,7 @@ def postAutoSmart():
 
     return json.dumps({'status': 'Something Went Wrong, Please Try Again'}), 500, {'ContentType':'application/json'} 
 
-
+# Auto sort functions
 def autoBasicRules():
 
   # Get all products
@@ -1000,7 +559,6 @@ def autoBasicRuleWork(shop, access_token, product_id, collections_skip_list, cur
       collections = collections + autoBasicRuleWork(shop, access_token, product_id, collections_skip_list, products_data['cursor'])
 
   return collections
-
 
 def checkRule(product, rule):
 

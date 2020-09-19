@@ -1,455 +1,193 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Collection Merchandiser</title>
+{% extends "layout.html" %}
 
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+{% block page %}collection{% endblock %}
+{% block content %}
+	<div id="full-screen-overlay">
+		<div class="loadingio-spinner-rolling-hk0ecpc78o4"><div class="ldio-t1tprsvy82">
+		<div></div>
+		</div></div>
+	</div>
 
-  </head>
-  <body style="margin: 0 auto;padding: 5% 30px; background-color: #F4F6F8;">
-    <h1>Products</h1>
+	<div id="manual-error" class="hide alert alert-danger" role="alert">
+	  This collection is not sorted manually. <a target="_blank" href="https://{{shop}}/admin/collections/{{collection_id}}">Change the collection sort method</a> to Manual in order to reorder products.
+	</div>
 
-    {% if response_status == 200 %}
-    <div class="alert alert-success" role="alert">
-      Sort order successfully changed
-    </div>
-    {% elif response_status != 'unchanged' %}
-    <div class="alert alert-danger" role="alert">
-      There was a problem. Please contact support
-    </div>
-    {% endif %}
+	<!-- Display Options -->
+	<div class="card display-options">
+	    <div class="card-header accordian-title" id="headingOne" data-toggle="collapse" data-target="#displayOptionsCollapse" aria-expanded="true" aria-controls="displayOptionsCollapse">
+	      <h5 class="mb-0">
+	        <p class="card-title">
+	          Display Options
+	        </p>
+	      </h5>
+	    </div>
 
-    {% if not manual_sort_order %}
-    <div class="alert alert-danger" role="alert">
-      This collection is not sorted manually. Change the collection sort method in order to reorder products.
-    </div>
-    {% endif %}
+	    <div id="displayOptionsCollapse" class="collapse" aria-labelledby="displayOptionsCollapse">
+	      <div class="card-body">
+	      	<div class="btn-group" role="group">
+	      	  <button onclick="collectionUtils.displayButton('title')" type="button" id="button-title" class="btn btn-secondary">Title</button>
+	      	  <button onclick="collectionUtils.displayButton('productPrice')" type="button" id="button-productPrice" class="btn btn-secondary">Price</button>
+	      	  <button onclick="collectionUtils.displayButton('availability')" type="button" id="button-availability" class="btn btn-secondary">Availability</button>
+	      	  <button onclick="collectionUtils.displayButton('daysCreated')" type="button" id="button-daysCreated" class="btn btn-secondary">Created Date</button>
+	      	  <button onclick="collectionUtils.displayButton('totalInventory')" type="button" id="button-totalInventory" class="btn btn-secondary">Inventory</button>
 
-    <div class="accordion" id="accordionExample">
-      <div class="card">
-        <div class="card-header" id="headingOne">
-          <h2 class="mb-0">
-            <button class="btn btn-secondary collapsed" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-              Show Options
-            </button>
-          </h2>
-        </div>
+	      	</div>
+	      	<div class="mt-2">
+	      		<label for="productsPerRow">Products per row</label>
+	      	    <select class="form-control" id="productsPerRow">
+	      			<option value="8.33%">12</option>
+	      			<option value="9.09%">11</option>
+	      			<option value="10%">10</option>
+	      			<option value="11.11%">9</option>
+	      			<option value="12.5%">8</option>
+	      			<option value="14.28%">7</option>
+	      			<option value="16.66%">6</option>
+	      			<option value="20%">5</option>
+	      			<option value="25%">4</option>
+	      			<option value="33.33%">3</option>
+	      			<option value="50%">2</option>
+	      	    </select>
+	      	</div>
 
-        <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
-          <div class="card-body">
-            <h4>Display Options</h4>
-            <div class="input-group mb-3">
-              <div class="input-group-prepend">
-                <label class="input-group-text" for="inputGroupSelect01">Products per Row</label>
-              </div>
-              <select id="row-select" class="custom-select" id="inputGroupSelect01">
-                <option value="" selected="" disabled>Row</option>
-                <option value="8.33%">12</option>
-                <option value="9.09%">11</option>
-                <option value="10%">10</option>
-                <option value="11.11%">9</option>
-                <option value="12.5%">8</option>
-                <option value="14.28%">7</option>
-                <option value="16.66%">6</option>
-                <option value="20%">5</option>
-                <option value="25%">4</option>
-                <option value="33.33%">3</option>
-                <option value="50%">2</option>
-              </select>
-            </div>
-            <div class="input-group mb-3 input-group__checkbox">
-              <div class="input-group-text">
-                <label for="show_text">Product Title</label>
-                <input class="input-group__show" checked type="checkbox" name="show_text" aria-label="Checkbox for following text input" >
-              </div>
-              <div class="input-group-text">
-                <label for="show_price">Product Price</label>
-                <input class="input-group__show" checked type="checkbox" name="show_price" aria-label="Checkbox for following price input" >
-              </div>
-              <div class="input-group-text">
-                <label for="show_variants">Variants Left in Stock</label>
-                <input class="input-group__show" checked type="checkbox" name="show_variants" aria-label="Checkbox for following text input" >
-              </div>
-              <div class="input-group-text">
-                <label for="show_stock">Total Remaining Stock</label>
-                <input class="input-group__show" checked type="checkbox" name="show_stock" aria-label="Checkbox for following text input" >
-              </div>
-              <div class="input-group-text">
-                <label for="show_available">Available on Online Store</label>
-                <input class="input-group__show" checked type="checkbox" name="show_available" aria-label="Checkbox for following text input" >
-              </div>
-            </div>
-          </div>
-        </div>
+	      	<div class="mt-2 custom-control custom-switch">
+	      	  <input onchange="collectionUtils.displayButton('unavailable')" type="checkbox" class="custom-control-input" id="unavailable">
+	      	  <label class="custom-control-label" for="unavailable">Hide products unavailable on Online Store</label>
+	      	</div>
       </div>
     </div>
+	</div>
+
+	<!-- Auto Sort -->
+	<div class="card mt-3 display-options">
+	    <div class="card-header accordian-title" id="headingOne" data-toggle="collapse" data-target="#quickSortCollapse" aria-expanded="true" aria-controls="quickSortCollapse">
+	      <h5 class="mb-0">
+	        <p class="card-title card-title-link">
+	          Quick Sort
+	        </p>
+	      </h5>
+	    </div>
+
+	    <div id="quickSortCollapse" class="collapse" aria-labelledby="quickSortCollapse">
+	      <div class="card-body">
+	      	<div id="sort-all-time" class="alert alert-warning" role="alert">	  
+	      	</div>
+	        <ul class="list-group">
+			  	  <li class="list-group-item d-flex justify-content-between align-items-center">
+			  	  	<div>
+			  	  	<p class="sort-title">Out of Stock</p>
+			  	  	<h5 class="card-title">Send all out of stock products to the bottom</h5>
+			  	    </div>
+			  	    <button onclick="window.sortHelper.inventoryBottom()" class="btn btn-primary">Sort</button>	
+			  	  </li>
+			  	  <li class="list-group-item d-flex justify-content-between align-items-center">
+			  	  	<div>
+			  	  	<p class="sort-title">Inventory</p>
+			  	  	<h5 class="card-title">Send products with inventory <select class="form-control inline-input-medium" id="inventoryCountCompare">
+				      <option selected value="<">Below</option>
+				      <option value="<=">Below or equal to</option>
+				      <option value="==">Exactly</option>
+				      <option value=">=">Above or equal to</option>
+				      <option value=">">Above</option>
+				    </select> <input type="number" class="form-inline inline-input form-control" id="inventoryCountInput"> to the <select class="form-control inline-input-medium" id="inventoryCountSelect">
+				      <option value="bottom" selected>Bottom</option>
+				      <option value="top">Top</option>
+				    </select></h5>
+			  	  	<h6 class="card-subtitle mb-2 text-muted"></h6>
+			  	    </div>
+			  	    <button onclick="window.sortHelper.inventoryNum()" class="btn btn-primary">Sort</button>	
+			  	  </li>
+			  	  <li class="list-group-item d-flex justify-content-between align-items-center">
+			  	  	<div>
+			  	  	<p class="sort-title">Created Date</p>
+			  	  	<h5 class="card-title">Send products created <select class="form-control inline-input-medium" id="createdDateCompare">
+				      <option value="<">Less than</option>
+				      <option value="<=">Less than or exactly</option>
+				      <option value="==">Exactly</option>
+				      <option value=">=">More than or exactly</option>
+				      <option selected value=">">More than</option>
+				    </select> <input type="number" min="0" class="form-inline inline-input form-control" id="createdDateInput"> day(s) ago to the <select class="form-control inline-input-medium" id="createdDateSelect">
+				      <option value="bottom" selected>Bottom</option>
+				      <option value="top">Top</option>
+				    </select></h5>
+			  	  	<h6 class="card-subtitle mb-2 text-muted"></h6>
+			  	    </div>
+			  	    <button onclick="window.sortHelper.daysSort()" class="btn btn-primary">Sort</button>	
+			  	  </li>
+			  	</ul>
+	      </div>
+	    </div>
+	</div>
 
 
+	<div class="form-inline d-none">
+		<div class="m-2 form-group form-check">
+			<input type="checkbox" class="form-check-input" id="title">
+			<label class="card-display-option form-check-label" for="title">Product Title</label>
+		</div>
+		<div class="m-2 form-group form-check">
+			<input type="checkbox" class="form-check-input" id="productPrice">
+			<label class="card-display-option form-check-label" for="productPrice">Product Price</label>
+		</div>
+		<div class="m-2 form-group form-check">
+			<input type="checkbox" class="form-check-input" id="availability">
+			<label class="card-display-option form-check-label" for="availability">Availability</label>
+		</div>
+		<div class="m-2 form-group form-check">
+			<input type="checkbox" class="form-check-input" id="daysCreated">
+			<label class="card-display-option form-check-label" for="daysCreated">Days Since Created</label>
+		</div>
+		<div class="m-2 form-group form-check">
+			<input type="checkbox" class="form-check-input" id="totalInventory">
+			<label class="card-display-option form-check-label" for="totalInventory">Total Inventory</label>
+		</div>
+		<div class="m-2 form-group form-check">
+			<input type="checkbox" class="form-check-input" id="variantsStock">
+			<label class="card-display-option form-check-label" for="variantsStock">Variants in Stock</label>
+		</div>
+	</div>
 
-    <div id="sortable" style="display: flex; flex-wrap: wrap; align-content: baseline;">
-      {% for collect in collects.collects %}
-        {% for product in products %}
-
-          {% if product.id == collect.product_id %}
-
-            <div data-position={{collect.position}} data-collect-id="{{collect.id}}" data-product-id="{{product.id}}" class="product-sort col-4">
-              <div style="background-color: white; margin: 5px; border-radius: .25rem;">
-              <div class="product-sort__card card" style="padding: 3px;">
-              <img class="product-sort_image" src="{% if product.images[0] %}{{product.images[0].src}}{% endif %}" style="width: 100%;">
-              <div style="padding: 5px 0; text-align: center; background-color: white;">
-              <h6 class="show_text__output">{{ product.title }}</h6>
-
-              {% set price = product.variants[0].price %}
-              <p class="show_price__output">{{ shop_currency |replace('{{amount}}', price, 1) }}</p>
-              {% if not product.published_at %}
-              <span class="show_available__output badge badge-secondary">Unavailable</span>
-              {% else %}
-              <span class="show_available__output badge badge-success">Available</span>
-              {% endif %}
-
-            <!-- Check variants in stock -->
-              {% set variables_count = [0] %}
-              {% set total_count = [0] %}
-              {% set ns = namespace(no_inventory_management=false) %}
-
-              {% for variant in product.variants %}
-                {% if not variant.inventory_management %}
-                  {% set ns.no_inventory_management = true %}
-                {% endif %}
-                {% if total_count.append(total_count.pop() + variant.inventory_quantity) %}{% endif %}
-              {% if variant.inventory_quantity > 0 %}
-                {% if variables_count.append(variables_count.pop() + 1) %}{% endif %}
-              {% endif %}
-              {% endfor %}
-
-              <!-- Work our percentage -->
-                {% set total = product.variants | length %}
-
-                <div {% if ns.no_inventory_management %}style="display: none"{% endif %} class="show_inventory__output">
-                  {% if variables_count[0] != 0 %}
-                    {% set percent = variables_count[0] / total * 100 %}
-                    <p data-variants-percent="{{percent|round|int}}" class="product-sort__percent show_variants__output">{{percent|round|int}}%</p>
-                  {% else %}
-                    <p data-variants-percent="0" class="product-sort__percent show_variants__output">0%</p>
-                  {% endif %}
-                  <p id="show_stock__output" class="show_stock__output">{{total_count[0]}}</p>
-                </div>
-                <span {% if not ns.no_inventory_management %}style="display: none"{% endif %} class="show_no_inventory__output show_stock__output wrapped-badge badge badge-secondary" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Some or all variants of this product don't track inventory. For this reason stock information is not shown">Non-Standard Inventory</span>
-              </div>
-              </div>
-              </div>
-            </div>
-
-          {% endif %}
-
-        {% endfor %}
-      {% endfor %}
-    </div>
-    <div>
-      <button style="background-color: #3f4eae; border-color: #3f4eae; cursor: pointer; margin: 10px auto; width: 40%; max-width: 200px; display: block;" id="load-more" type="button" class="btn btn-primary">Load More</button>
-    </div>
-    <div>
-      <form style="display: none;" id="sort-change" method="POST" enctype="multipart/form-data">
-        <input id="collection-sort" class="collection-sort" value="" type="text" name="products-switch">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-        <button disabled id="collection-sort__submit">SUBMIT</button>
-      </form>
-    </div>
-
-    <style>
-      .btn.disabled, .btn:disabled {
-        opacity: 0.3;
-      }
-
-      .wrapped-badge {
-        word-wrap: break-word; 
-        width: 100%; 
-        white-space: unset;
-      }
-    </style>
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script
-      src="https://code.jquery.com/jquery-3.4.1.min.js"
-      integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
-      crossorigin="anonymous"></script>
-    <!-- jQuery UI -->
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <!-- Popper.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <!-- App SDK -->
-    <script src="https://unpkg.com/@shopify/app-bridge@1.6/umd/index.development.js"></script>
-    <!-- jQuery Touch Punch for mobile functionlaity -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+	<div>
+	<div class="pt-5 pb-5">
+		<div class="container-fluid">
+			<div id="sortable">
+				<div class="row" id="products__container">
+				</div>
+			</div>
+		</div>
+	</div>
+	<button data-next-link="{{cursor}}" id="load-more" {% if not next_page %}disabled{% endif %} type="button" onClick="collectionUtils.loadMore()" class="btn btn-primary small-button">Load More</button>
+	<button {% if not next_page %}disabled{% endif %} id="load-all" type="button" onClick="collectionUtils.loadAll()" class="btn btn-primary small-button">Load All<p><small class="center" id="load-all-time"></small></p></button>
+	</div>
 
 
-    <script type="text/javascript">
-    var AppBridge = window['app-bridge'];
-    var createApp = AppBridge.default;
-    var app = createApp({
-      apiKey: '06508637004c80c9f5f731440fb36242',
-      shopOrigin: '{{shop}}',
-    });
+	<!-- Modals -->
+	<div id="completion-modal" class="modal" tabindex="-1">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title"></h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	        <p></p>
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
 
-    var AppBridge = window['app-bridge'];
-    var actions = AppBridge.actions;
-    var ResourcePicker = actions.ResourcePicker;
-    var Button = actions.Button;
-    var ButtonGroup = actions.ButtonGroup;
-    var TitleBar = actions.TitleBar;
-    var Redirect = actions.Redirect;
+	<script>
+		const collectionId = '{{collection_id}}';
+		const error = '{{error | safe}}';
+		const collectionInfo = {{ collection_data | safe }};
+		const csrfToken = '{{csrf_token() }}';
+		const displayOptions = ['title', 'productPrice', 'availability', 'daysCreated', 'totalInventory', 'unavailable'];
+		var loadRemaining = {% if not next_page %}false{% else %}true{% endif %};
+	</script>
 
-    // Init redirect
-    const redirect = Redirect.create(app);
+{% endblock %}
 
-    // Save button
-    const save = Button.create(app, {label: 'Save'});
-    save.set({disabled: true});
-    const saveCollection = save.subscribe(Button.Action.CLICK, data => {
-      $('#sort-change').submit()
-    });
-
-    // Secondary buttons
-    const homeButton = Button.create(app, {label: 'Home'});
-    const contactButton = Button.create(app, {label: 'Contact'});
-    const instructionsButton = Button.create(app, {label: 'Instructions'});
-    const privacyButton = Button.create(app, {label: 'Privacy Policy'});
-    const automationsButton = Button.create(app, {label: 'Automations'});
-
-    const groupButton = ButtonGroup.create(app, {label: 'Navigation', buttons: [homeButton, contactButton, instructionsButton, privacyButton]});
-    // Secondary buttons actions
-    const viewContact = contactButton.subscribe(Button.Action.CLICK, data => {
-      redirect.dispatch(Redirect.Action.APP, '/contact');
-    });
-    const homeContact = homeButton.subscribe(Button.Action.CLICK, data => {
-      redirect.dispatch(Redirect.Action.APP, '/home');
-    });
-    const viewInstructions = instructionsButton.subscribe(Button.Action.CLICK, data => {
-      redirect.dispatch(Redirect.Action.APP, '/instructions');
-    });
-    const viewPrivacy = privacyButton.subscribe(Button.Action.CLICK, data => {
-      redirect.dispatch(Redirect.Action.APP, '/privacy-policy');
-    });
-    // const viewAutomations = automationsButton.subscribe(Button.Action.CLICK, data => {
-    //   redirect.dispatch(Redirect.Action.APP, '/automations');
-    // });
-
-    const titleBarOptions = {
-      title: 'Collection',
-      buttons: {
-        primary: save,
-        secondary: [groupButton]
-      },
-    };
-    const myTitleBar = TitleBar.create(app, titleBarOptions);
-
-    // Update background colors based on variant percent
-    $('.product-sort__percent').each(function() {
-      var percent = -(($(this).data('variants-percent') - 100) / 100)
-      if (percent != -0 ) {
-        $(this).closest('.product-sort__card').css('background-color', 'rgba(165, 28, 28,' + percent + ')')
-      }
-    })
-
-    {% if manual_sort_order %}
-
-    $(document).ready(function() {
-
-      // Enable popovers
-      $('[data-toggle="popover"]').popover()
-
-      {% if custom_collection %}
-
-      // Update input form with values for custom collection
-      $( "#sortable" ).sortable({
-        change: function( event, ui ) {
-          $(window).mouseup(function() {
-          var sortableString = "";
-          $('.product-sort').each(function(i){
-            var collectId = ""
-            var count = i + 1
-            sortableString += $(this).data('collect-id') + ',' + count;
-            if(count != $('.product-sort').length) { sortableString += (';') }
-          });
-          save.set({disabled: false});
-          $('.collection-sort').val(sortableString)
-        })
-        }
-      });
-
-      {% else %}
-
-      // Update input form with values for smart collection
-      $( "#sortable" ).sortable({
-        change: function( event, ui ) {
-          $(window).mouseup(function() {
-          var sortableString = "";
-          $('.product-sort').each(function(i){
-            var collectId = ""
-            var count = i + 1
-            sortableString += 'products[]=' + $(this).data('product-id')
-            if(count != $('.product-sort').length) { sortableString += ('&') }
-          });
-          save.set({disabled: false});
-          $('.collection-sort').val(sortableString)
-        })
-        }
-      });
-
-      {% endif %}
-
-      $("#sortable").disableSelection();
-
-    {% endif %}
-
-    // Update products per row
-    var rows = sessionStorage.getItem("Rows")
-    if (rows) { 
-      $('.product-sort').css('width', rows).removeClass('col-4')
-      $('#row-select option[val="' + rows + '"]').attr('selected', 'selected')
-    }
-
-    $('#row-select').change(function() {
-      sessionStorage.Rows = $(this).val()
-      $('.product-sort').css('width', $(this).val()).removeClass('col-4')
-    })
-
-    // Display options
-    var show_properties = ['show_text', 'show_variants', 'show_stock', 'show_available', 'show_price']
-    $(show_properties).each(function(index, value) {
-        if (!sessionStorage[value]) {
-          sessionStorage.setItem(value, 'show')
-        } else if (sessionStorage[value] == 'hide') {
-          $('.input-group__show[name=' + value + ']').prop('checked', false)
-          $('.' + value + '__output').addClass('hidden')
-        }
-      })  
-
-    $('.input-group__show').change(function() {
-        var ChangedOutput = $(this).attr('name');
-        $('.' + ChangedOutput + '__output').toggleClass('hidden');
-        sessionStorage[ChangedOutput] == 'show' ? sessionStorage.setItem(ChangedOutput, 'hide') : sessionStorage.setItem(ChangedOutput, 'show') 
-      });
-
-    {% if manual_sort_order %}
-    })
-    {% endif %}
-
-    // If more products to load, show load more button
-    var next_link = '{{next_link}}'
-    {% if next_active %}
-    var next_active = true
-    {% else %}
-    var next_active = false
-    {% endif %}
-    next_active ? $('#load-more').attr('disabled', false) : $('#load-more').attr('disabled', true)
-
-    // AJAX to retrieve next 10 products, copy first product card, update values to new products and
-    // append to sortable section
-    $('#load-more').on('click', function() {
-      $('#load-more').attr('disabled', true)
-      $.ajax({
-        url: 'https://shopify-stock-app.herokuapp.com/ajax-collects',
-        type: 'GET',
-        data: { 'next_link' : next_link,
-           'csrfmiddlewaretoken': '{{csrf_token}}'
-         },
-        success: function(response) {
-          $('#load-more').attr('disabled', false)
-          $.each(response.collect_products, function(index, value) {
-            // Update cards' ids
-            var el = $('.product-sort:first-child')
-                .clone()
-                .attr('data-collect-id', value.collect_id)
-                .attr('data-product-id', value.product_id)
-                .attr('data-position', value.position)
-
-            // Update card image, title & price
-            el.find('.product-sort_image').attr('src', value.product_image.src)
-            el.find('.show_text__output').text(value.product_title)
-            var currency = '{{ shop_currency }}'
-            {% raw %}
-            var price = value.product_varied_price ? currency.replace('{{amount}}', value.product_price) + ' (Varied)' : currency.replace('{{amount}}', value.product_price) 
-            {% endraw %}
-            el.find('.show_price__output').html(price)
-
-            // Update variants (total and percentage)
-            if(value.no_inventory_management) {
-              // If product does not track inventory
-              el.find('.show_inventory__output').css('display', 'none')
-              el.find('.show_no_inventory__output').css('display', 'block')
-              var avail_variants = 100
-              el.find('.show_variants__output').data('percent', avail_variants)
-            } else {
-              // If product does track inventory
-              el.find('.show_inventory__output').css('display', 'block')
-              el.find('.show_no_inventory__output').css('display', 'none')
-              var avail_variants = Math.floor(value.avail_variants * 100)
-              avail_variants == 0 ? el.find('.show_variants__output').data('percent', avail_variants) : el.find('.show_variants__output').data('percent', avail_variants + '%') 
-              el.find('.show_variants__output').text(avail_variants + '%')
-              el.find('#show_stock__output').text(value.total_variants)
-            }
-
-            // Update products availability
-            el.find('.show_available__output').text(value.product_available)
-            value.product_available == 'Unavailable' ? el.find('.show_available__output').removeClass('badge-success').addClass('badge-secondary') : el.find('.show_available__output').addClass('badge-success').removeClass('badge-secondary')
-
-            // Update background color based on variant percentage
-            $(el).find('.product-sort__card').css('background-color', 'white')
-            var percent = -((avail_variants - 100) / 100)
-            if(percent != 0) {
-              $(el).find('.product-sort__card').css('background-color', 'rgba(165, 28, 28,' + percent + ')')
-            }
-            // Add to sortable section
-            $(el).insertAfter(".product-sort:last-child")
-
-            // Enable popover
-            $('[data-toggle="popover"]').popover()
-          });
-          // Update next_link and load more based on whether there are more products to load
-          next_link = response.next_link
-          next_active = response.next_active
-          next_active ? $('#load-more').attr('disabled', false) : $('#load-more').attr('disabled', true)
-        }
-      });
-    });
-
-    </script>
-
-    <style>
-
-      .hidden {
-        display: none;
-      }
-
-      .input-group__checkbox .input-group-text {
-        margin: 10px;
-        margin-left: 0;
-      }
-
-      .accordion>.card:first-of-type {
-        border-bottom: 1px solid rgba(0,0,0,.125);;
-      }
-
-      .input-group__checkbox label {
-        margin-bottom: 0;
-        margin-right: 5px;
-      }
-
-      .product-sort p {
-        font-size: 0.7em;
-        margin: 0.2em;
-      }
-
-      .badge {
-        font-size: 60%;
-      }
-    </style>
-  </body>
-</html>

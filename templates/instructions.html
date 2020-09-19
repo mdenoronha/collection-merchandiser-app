@@ -1,20 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Collection Merchandiser</title>
+{% extends "layout.html" %}
+{% block content %}
+  <h1>Instructions</h1>
+  <p>The Collection Merchandiser app helps you identify low and out of stock products to help better merchande your collections. Getting started is easy.</p>
 
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+  <div class="card mb-3">
+    <div class="row no-gutters">
+      <div class="col-md-4">
+        <img src="{{url_for('static', filename='imgs/instruct1-min.png')}}" class="card-img" alt="Select a collection">
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <h5 class="card-title">Select a Collection</h5>
+          <p class="card-text">Click the 'Collections' button to select a collection to manage.</p>
+          <p class="card-text">Note: you will only be able to sort products on collections that are sorted manually. A warning message will let you know about this.</p>
+          <p class="card-text">After choosing a collection select 'Merchandise Collection'.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card mb-3">
+    <div class="row no-gutters">
+      <div class="col-md-4">
+        <img src="{{url_for('static', filename='imgs/instruct4.png')}}" class="card-img" alt="Select your options">
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <h5 class="card-title">Select your Options</h5>
+          <p class="card-text">Use the 'Rows' selector to choose how many products per row you'd like to view in the app. Use the display checkboxes to show or hide product information.</p>
+          <p class="card-text">Use the remaining options to show and hide product information you'd like to see. The 'Availability' option refers to whether the product is visible on the online store</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card mb-3">
+    <div class="row no-gutters">
+      <div class="col-md-4">
+        <img src="{{url_for('static', filename='imgs/instruct5.png')}}" class="card-img" alt="Select a collection">
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <h5 class="card-title">Sort Products</h5>
+          <p class="card-text">Sort products by dragging and dropping them in a preferred order. You can select multiple product by clicking on the required products and dragging them to the preferred place.</p>
+          <p class="card-text">Once completed, just click 'Save' and you're done.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.2/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-  </head>
-</html>
+  <div class="card mb-3">
+    <div class="row no-gutters">
+      <div class="col-md-4">
+        <img src="{{url_for('static', filename='imgs/instruct6.png')}}" class="card-img" alt="Select a collection">
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <h5 class="card-title">Quick Sort</h5>
+          <p class="card-text">Use the quick sort feature to sort the products based on particularly criteria (e.g. stock levels, recency). For large collections, allow a few seconds for all products to be loaded and sorted</p>
+          <p class="card-text">Once it's done, don't forget to hit Save to complete your changes.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

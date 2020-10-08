@@ -613,7 +613,7 @@ class Product {
   	let cardTop = `
 	  				<div data-product-id="${this.id}" data-positon="${window['productCount']}" class="products__card ${this.storeUrl ? '' : 'products__unavailable'}" style="width: ${window['rows'] || '20%'};">
 	  					<div class="card">
-	  					<a data-toggle="tooltip" data-placement="bottom" title="View product in new tab" class="view-product-icon fa fa-eye" target="_blank" href="https://${shop}/admin/products/${this.id}"></a>`;
+	  					<a data-toggle="tooltip" data-placement="bottom" title="View product in new tab" class="view-product-icon fa fa-eye" target="_blank" href="https://${shop}/admin/products/${this.id.replace('gid://shopify/Product/', '')}"></a>`;
 	let cardRemove = '';
 	if(collectionInfo.data.collection.ruleSet == null) {
 		cardRemove = `<i data-toggle="tooltip" data-placement="bottom" title="Remove product from collection" onclick="collectionUtils.showDeleteModal('${this.title}', '${this.id}')" class="fa fa-times remove-product-icon" aria-hidden="true"></i>`

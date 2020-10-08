@@ -1,5 +1,6 @@
 collectionUtils = {
 	initElements() {
+		this.createLoading();
 		if(error) {
 			collectionUtils.showMessage('Error', 'Unexpected error. Please try again');
 		} else {
@@ -18,12 +19,19 @@ collectionUtils = {
 				products = collectionInfo.data.collection.products.edges;
 				let productsCount = collectionInfo.data.collection.productsCount;
 				if(productsCount > 50) {
-					let estimatedTime = productsCount / 50 * 3;
+					let estimatedMultiplier = limited ? 8 : 3
+					let estimatedTime = productsCount / 50 * estimatedMultiplier;
 					document.querySelector('#load-all-time').innerHTML = estimatedTime > 2 ? `Estimated load time: ${estimatedTime.toFixed(0)} secs` : '';
 					if(estimatedTime > 2) {
 						document.querySelector('#sort-all-time').innerHTML = `Quick Sort will reorder the products below based on your selection. With the size of this collection, sorting may take up to ${(estimatedTime * 1.5).toFixed(0)} secs to complete. Don't forget to Save when you're happy with your changes.`
 					} else {
 						document.querySelector('#sort-all-time')[0].remove();
+					}
+				}
+				if(productsCount > 500) {
+					let largeCollectionMessage = document.querySelector('#large-collection-error');
+					if(largeCollectionMessage) {
+						document.querySelector('#large-collection-error').classList.remove('hide');
 					}
 				}
 			} catch(e) {
@@ -110,13 +118,22 @@ collectionUtils = {
 		return formatter.format(amount);
 	},
 
+	createLoading() {
+		app.subscribe(Loading.ActionType.START, () => {
+		  window['loading'] = true;
+		});
+		app.subscribe(Loading.ActionType.STOP, () => {
+		  window['loading'] = false;
+		});
+	},
+
 	initLoading(direction) {
 		if(direction == 'start') {
-			loading.dispatch(Loading.Action.START);
+			if(!window['loading']) { loading.dispatch(Loading.Action.START) };
 			document.getElementById('full-screen-overlay').classList.add('full-screen-overlay--active');
 		} else {
-			document.getElementById('full-screen-overlay').classList.remove('full-screen-overlay--active');
 			loading.dispatch(Loading.Action.STOP);
+			document.getElementById('full-screen-overlay').classList.remove('full-screen-overlay--active');
 		}
 	}, 
 
@@ -154,6 +171,47 @@ collectionUtils = {
 		document.querySelector('#completion-modal .modal-title').innerHTML = title;
 		document.querySelector('#completion-modal .modal-body').innerHTML = `<p>${message}</p>`;
 		$('#completion-modal').modal()
+	},
+
+	showDeleteModal(name, id) {
+		document.querySelector('#delete-product-name').innerHTML = name;
+		document.querySelector('#delete-product-data').setAttribute('data-product', id);
+		$('#delete-product-modal').modal()
+	},
+
+	removeProduct() {
+		let productId = document.querySelector('#delete-product-data').getAttribute('data-product');
+		let _this = this;
+		$.ajax({
+			url: 'https://shopify-stock-app.herokuapp.com/product-remove',
+			contentType: 'application/json;charset=UTF-8',
+			type: 'POST',
+			data: JSON.stringify({
+				'productId': productId,
+				'collectionId': collectionId, 
+			})
+		})
+		.done(function(res) {
+			let errorMessage = 'Unexpected error. There has been an issue removing this product from the collection. Please try again or contact support if this issue persists'
+			console.log(res)
+			try {
+				if(res['data']['data']['collectionRemoveProducts']['userErrors'].length > 0) {
+					console.log(res['data']['collectionRemoveProducts']['userErrors'])
+					_this.showMessage('Error 1', errorMessage);
+				} else {
+					_this.showMessage('Successfully Scheduled', `The product removal has been scheduled, this will be live within a few minutes.`);
+					let removedProduct = document.querySelector(`[data-product-id="${productId}"]`);
+					removedProduct.parentNode.removeChild(removedProduct);
+				}
+			} catch(e) {
+				console.log(e);
+				_this.showMessage('Error 2', errorMessage);
+			}
+		})
+		.fail(function(xhr, status, error) {
+			console.log('Error: ' + error);
+			_this.showMessage('Error 3', errorMessage);
+		});
 	},
 
 	updateRowsInfo(width=false) {
@@ -303,6 +361,7 @@ collectionUtils = {
 			  url: 'https://shopify-stock-app.herokuapp.com/collection-new-load',
 			  type: 'GET',
 			  data: { 
+			  	'limited': limited,
 			  	'cursor' : cursor,
 			    'csrfmiddlewaretoken': csrfToken,
 			    'collectionId': collectionId
@@ -539,6 +598,7 @@ class Product {
   	this.currency = product.priceRange.minVariantPrice.currencyCode;
   	this.storeUrl = product.onlineStoreUrl;
   	this.createdDate = product.createdAt;
+  	if(product.variants) { this.variants = product.variants.edges };
   	this.id = product.id;
   	window['productCount'] = window['productCount'] || 0;
   }
@@ -552,10 +612,15 @@ class Product {
   	let cardHeader;
   	let cardTop = `
 	  				<div data-product-id="${this.id}" data-positon="${window['productCount']}" class="products__card ${this.storeUrl ? '' : 'products__unavailable'}" style="width: ${window['rows'] || '20%'};">
-	  					<div class="card">`;
+	  					<div class="card">
+	  					<a data-toggle="tooltip" data-placement="bottom" title="View product in new tab" class="view-product-icon fa fa-eye" target="_blank" href="https://${shop}/admin/products/${this.id}"></a>`;
+	let cardRemove = '';
+	if(collectionInfo.data.collection.ruleSet == null) {
+		cardRemove = `<i data-toggle="tooltip" data-placement="bottom" title="Remove product from collection" onclick="collectionUtils.showDeleteModal('${this.title}', '${this.id}')" class="fa fa-times remove-product-icon" aria-hidden="true"></i>`
+	}
 
 	window['productCount']++
-	return cardTop + cardImage;
+	return cardTop + cardRemove + cardImage;
   }
 
   createTitle() {
@@ -564,6 +629,23 @@ class Product {
   	let price = this.currency && this.minPrice ? collectionUtils.formatPrice(this.currency, this.minPrice / 100) : null;
   	let cardPrice = price ? `<p class="products__productPrice">${price}</p>` : ''
   	return cardBody + cardTitle + cardPrice
+  }
+
+  createVariants() {
+  	let cardVariants
+  	if(this.variants) {
+  		cardVariants = `<ul class="list-group products__productVariants">`
+  		this.variants.map(x => {
+  			cardVariants = cardVariants + `
+  			<li class="list-group-item d-flex justify-content-between align-items-center">
+  			  ${x.node.title == 'Default Title' ? 'Default' : x.node.title}
+  			  <span class="badge ${x.node.inventoryQuantity < 1 ? 'badge-danger' : x.node.inventoryQuantity < 5 ? 'badge-warning' : 'badge-primary'} badge-pill">${x.node.inventoryQuantity}</span>
+  			</li>
+  			`
+  		})
+  		cardVariants = cardVariants + `</ul>`
+  	}
+  	return cardVariants
   }
 
   createStandardInfo() {
@@ -583,12 +665,10 @@ class Product {
   	let cardHeader = this.createHeader();
   	let cardTitle = this.createTitle();
   	let cardStandardInfo = this.createStandardInfo();
-  	// let cardVariants = this.createVariantsStock();
-  	let cardFooter = `</div>
-  					</div>
-				</div>
-			</div>`
-	let cardElements = [cardHeader, cardTitle, cardStandardInfo, cardFooter];
+  	let cardVariants = this.createVariants();
+  	let cardBodyFooter = `</div>`
+	let cardEnd = '</div></div></div>'
+	let cardElements = [cardHeader, cardTitle, cardStandardInfo, cardBodyFooter, cardVariants, cardEnd];
 	for(let element of cardElements) {
 		if(element) {
 			card = card + element;

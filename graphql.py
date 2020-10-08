@@ -32,8 +32,7 @@ def reorderProducts(store, access_token, collection_id, changes):
 
 	return data
 
-# Used for manual sort page
-def queryProducts(store, access_token, collection_id, cursor=None):
+def removeProducts(store, access_token, collection_id, product_id):
 
 	headers = {
         "X-Shopify-Access-Token": access_token,
@@ -43,39 +42,126 @@ def queryProducts(store, access_token, collection_id, cursor=None):
 	client = GraphqlClient(endpoint="https://" + store + "/admin/api/2020-04/graphql.json")
 	
 	query = """
-    query MyQuery($collection: ID!, $cursor: String) {
-	  collection(id: $collection) {
-	  	productsCount
-	  	sortOrder
-	    products(first: 250, after: $cursor) {
-	      pageInfo {
-	        hasNextPage
-	        hasPreviousPage
-	      }
-	      edges {
-	        cursor
-	        node {
-	          title
-	          onlineStoreUrl
-	          id
-	          createdAt
-	          priceRange {
-	            minVariantPrice {
-	              amount
-	              currencyCode
-	            }
-	          }
-	          tracksInventory
-	          totalInventory
-	          featuredImage {
-                transformedSrc(maxHeight: 300)
-              }
-	        }
-	      }
+	mutation collectionRemoveProducts($id: ID!, $productIds: [ID!]!) {
+	  collectionRemoveProducts(id: $id, productIds: $productIds) {
+	    job {
+	      id
+	    }
+	    userErrors {
+	      field
+	      message
 	    }
 	  }
 	}
 	"""
+
+	if not 'gid://shopify/Collection/' in collection_id:
+		collection_id = 'gid://shopify/Collection/{0}'.format(collection_id)
+	variables = {'id': collection_id, 'productIds': [product_id]};
+
+	data = client.execute(query=query, headers=headers, variables=variables)
+
+	return data
+
+# Used for manual sort page
+def queryProducts(store, access_token, collection_id, cursor=None, withVariants=False):
+
+	headers = {
+        "X-Shopify-Access-Token": access_token,
+        "Content-Type": "application/json"
+    }
+
+	client = GraphqlClient(endpoint="https://" + store + "/admin/api/2020-04/graphql.json")
+	
+
+	if withVariants:
+		query = """
+	    query MyQuery($collection: ID!, $cursor: String) {
+		  collection(id: $collection) {
+		  	productsCount
+		  	sortOrder
+		  	ruleSet {
+	          rules {
+	            column
+	          }
+	        }
+		    products(first: 30, after: $cursor) {
+		      pageInfo {
+		        hasNextPage
+		        hasPreviousPage
+		      }
+		      edges {
+		        cursor
+		        node {
+		          title
+		          onlineStoreUrl
+		          id
+		          createdAt
+		          priceRange {
+		            minVariantPrice {
+		              amount
+		              currencyCode
+		            }
+		          }
+		          tracksInventory
+		          totalInventory
+		          featuredImage {
+	                transformedSrc(maxHeight: 300)
+	              }
+	              variants(first: 15) {
+			        edges {
+			          node {
+			            title
+			            inventoryQuantity
+			          }
+			        }
+			      }
+		        }
+		      }
+		    }
+		  }
+		}
+		"""
+	else:
+		query = """
+	    query MyQuery($collection: ID!, $cursor: String) {
+		  collection(id: $collection) {
+		  	productsCount
+		  	sortOrder
+		  	ruleSet {
+	          rules {
+	            column
+	          }
+	        }
+		    products(first: 250, after: $cursor) {
+		      pageInfo {
+		        hasNextPage
+		        hasPreviousPage
+		      }
+		      edges {
+		        cursor
+		        node {
+		          title
+		          onlineStoreUrl
+		          id
+		          createdAt
+		          priceRange {
+		            minVariantPrice {
+		              amount
+		              currencyCode
+		            }
+		          }
+		          tracksInventory
+		          totalInventory
+		          featuredImage {
+	                transformedSrc(maxHeight: 300)
+	              }
+		        }
+		      }
+		    }
+		  }
+		}
+		"""
 	
 
 	variables = {'collection': 'gid://shopify/Collection/{0}'.format(collection_id), 'cursor': cursor};
@@ -131,17 +217,17 @@ def collectionCreate(store, access_token):
 	client = GraphqlClient(endpoint="https://" + store + "/admin/api/2020-04/graphql.json")
 	
 	query = """
-  mutation collectionCreate($input: CollectionInput!) {
-    collectionCreate(input: $input) {
-      collection {
-        id
-      }
-      userErrors {
-        field
-        message
-      }
-    }
-  }
+	  mutation collectionCreate($input: CollectionInput!) {
+	    collectionCreate(input: $input) {
+	      collection {
+	        id
+	      }
+	      userErrors {
+	        field
+	        message
+	      }
+	    }
+  	}
 	"""
 
 	variables = {'input': 'gid://shopify/Product/{0}'.format(product_id), 'cursor': cursor};

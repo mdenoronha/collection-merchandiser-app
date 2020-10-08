@@ -60,7 +60,6 @@ mail = Mail(app)
 
 nonce = ''
 
-
 def randomword(length):
    letters = string.ascii_lowercase
    return ''.join(random.choice(letters) for i in range(length))
@@ -165,43 +164,43 @@ def install():
     else:
         return 'Authentication failed. Please contact support at help@matthewdenoronha.com'
 
-        # Connect page
-        @app.route('/connect', methods=['GET'])
-        def connect():
+# Connect page
+@app.route('/connect', methods=['GET'])
+def connect():
 
-            # get nonce
-            nonce_value = request.args.get("state")
+    # get nonce
+    nonce_value = request.args.get("state")
 
-            # get hostname
-            shop = request.args.get("shop")
+    # get hostname
+    shop = request.args.get("shop")
 
-            # Carry out oauth verification
-            if authenticate_hmac(request) and nonce_value == nonce and validators.domain(shop) and shop.endswith('myshopify.com'):
-                params = {
-                    "client_id": os.environ.get("SHOPIFY_KEY"),
-                    "client_secret": os.environ.get("SHOPIFY_SECRET"),
-                    "code": request.args.get("code")
-                }
-                resp = requests.post(
-                    "https://{0}/admin/oauth/access_token".format(
-                        request.args.get("shop")
-                        ),
-                    data=params
-                    )
+    # Carry out oauth verification
+    if authenticate_hmac(request) and nonce_value == nonce and validators.domain(shop) and shop.endswith('myshopify.com'):
+        params = {
+            "client_id": os.environ.get("SHOPIFY_KEY"),
+            "client_secret": os.environ.get("SHOPIFY_SECRET"),
+            "code": request.args.get("code")
+        }
+        resp = requests.post(
+            "https://{0}/admin/oauth/access_token".format(
+                request.args.get("shop")
+                ),
+            data=params
+            )
 
-                if 200 == resp.status_code:
-                    resp_json = json.loads(resp.text)
+        if 200 == resp.status_code:
+            resp_json = json.loads(resp.text)
 
-                    index_response = make_response(redirect('home/{0}'.format(request.args.get("shop").replace('.myshopify.com', ''))))
-                    index_response.headers.add('Set-Cookie','shop={0}; SameSite=None; Secure'.format(request.args.get("shop")))
-                    index_response.headers.add('Set-Cookie','access_token={0}; SameSite=None; Secure'.format(resp_json.get("access_token")))
+            index_response = make_response(redirect('home/{0}'.format(request.args.get("shop").replace('.myshopify.com', ''))))
+            index_response.headers.add('Set-Cookie','shop={0}; SameSite=None; Secure'.format(request.args.get("shop")))
+            index_response.headers.add('Set-Cookie','access_token={0}; SameSite=None; Secure'.format(resp_json.get("access_token")))
 
-                    return index_response
-                else:
-                    print(resp.status_code, resp.text)
-                    return 'Cannot connect to app. Please contact support at help@matthewdenoronha.com. {}: {}'.format(e.message, e.description)
-            else:
-                return 'Authentication failed. Please contact support at help@matthewdenoronha.com'
+            return index_response
+        else:
+            print(resp.status_code, resp.text)
+            return 'Cannot connect to app. Please contact support at help@matthewdenoronha.com. {}: {}'.format(e.message, e.description)
+    else:
+        return 'Authentication failed. Please contact support at help@matthewdenoronha.com'
 
 # Contact page
 @app.route('/contact', methods=['GET', 'POST'])
@@ -293,16 +292,38 @@ def collectionNew(collection_id):
         shop=getShop(request)
     )
 
+# Collection page
+@app.route('/collection-adv/<collection_id>', methods=['GET', 'POST'])
+def collectionAdv(collection_id):
+
+    # from queue_work import testQueue
+    collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, None, 0, True)
+    js_collection_data = (json.dumps(collection_data['js_collection_data'])
+    .replace(u'<', u'\\u003c')
+    .replace(u'>', u'\\u003e')
+    .replace(u'&', u'\\u0026')
+    .replace(u"'", u'\\u0027'))
+
+    return render_template('collection_adv.html', 
+        collection_data=js_collection_data, 
+        error=collection_data['error'], 
+        cursor=collection_data['cursor'], 
+        next_page=collection_data['next_page'], 
+        collection_id=collection_id, 
+        shop=getShop(request)
+    )
+
 # Collection page ajax
 @app.route('/collection-new-load', methods=['GET', 'POST'])
 def collectionNewLoad():
 
     cursor = request.args.get('cursor', '')
     collection_id = request.args.get('collectionId', '')
+    limited = request.args.get('limited', '')
     all_products = []
     
     for i in range(10):
-        collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, cursor)
+        collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, cursor, 0, limited)
         all_products = all_products + collection_data['js_collection_data']['data']['collection']['products']['edges']
         if collection_data['next_page'] == False or collection_data['error'] != None: 
             break
@@ -317,6 +338,21 @@ def collectionNewLoad():
     return {'data': collection_data}
 
 @csrf.exempt
+@app.route('/product-remove', methods=['GET', 'POST'])
+def productRemove():
+
+    json_data = json.loads(request.data)
+    collection_id = json_data.get('collectionId')
+    product_id = json_data.get('productId')
+    shop = getShop(request)
+    access_token = request.cookies.get("access_token")
+
+    remove_product = graphql.removeProducts(shop, access_token, collection_id, product_id)
+
+    return {'data': remove_product}
+
+
+@csrf.exempt
 @app.route('/collection-new-save', methods=['GET', 'POST'])
 def collectionNewSave():
     json_data = json.loads(request.data)
@@ -325,7 +361,6 @@ def collectionNewSave():
     collection_id = json_data.get('collectionId')
     shop = getShop(request)
     access_token = request.cookies.get("access_token")
-    print(collection_id, changes)
 
     # TODO: Change to queue
     reorder_data = reorderQuery(shop, access_token, collection_id, changes)
@@ -357,11 +392,11 @@ def reorderQuery(shop, access_token, collection_id, changes, rerun_count=0):
         'error': error
     }
 
-def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0):
+def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0, withVariants=False):
 
     error = ''
     next_page = False
-    collection_data = graphql.queryProducts(shop, access_token, collection_id, cursor)
+    collection_data = graphql.queryProducts(shop, access_token, collection_id, cursor, withVariants)
     js_collection_data = collection_data
 
     if 'errors' in collection_data:
@@ -371,7 +406,7 @@ def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0)
             if error == 'Throttled' and rerun_count < 10:
                 required_time = findWaitTime(collection_data['extensions'])
                 time.sleep(required_time)
-                return productsQuery(shop, access_token, collection_id, cursor, rerun_count+1)
+                return productsQuery(shop, access_token, collection_id, cursor, rerun_count+1, withVariants)
 
     try:
         last_product = collection_data['data']['collection']['products']['edges'][len(collection_data['data']['collection']['products']['edges']) - 1]

@@ -25,7 +25,7 @@ const viewContact = contactButton.subscribe(Button.Action.CLICK, data => {
   redirect.dispatch(Redirect.Action.APP, '/contact');
 });
 const homeContact = homeButton.subscribe(Button.Action.CLICK, data => {
-  redirect.dispatch(Redirect.Action.APP, '/home/{{shop | replace(".myshopify.com", "")}}');
+  redirect.dispatch(Redirect.Action.APP, homeLink);
 });
 const viewInstructions = instructionsButton.subscribe(Button.Action.CLICK, data => {
   redirect.dispatch(Redirect.Action.APP, '/instructions');

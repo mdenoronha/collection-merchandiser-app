@@ -12,6 +12,11 @@
 	  This collection is not sorted manually. <a target="_blank" href="https://{{shop}}/admin/collections/{{collection_id}}">Change the collection sort method</a> to Manual in order to reorder products.
 	</div>
 
+	<div id="large-collection-error" class="hide alert alert-danger" role="alert">
+	  As this is a large collection, you may experience longer waiting times when loading/sorting products. For a faster experience use <a target="_blank" onclick="redirect.dispatch(Redirect.Action.APP, '/collection-new/{{collection_id}}')">Standard Sorting</a>
+	</div>
+	
+
 	<!-- Display Options -->
 	<div class="card display-options">
 	    <div class="card-header accordian-title" id="headingOne" data-toggle="collapse" data-target="#displayOptionsCollapse" aria-expanded="true" aria-controls="displayOptionsCollapse">
@@ -30,7 +35,7 @@
 	      	  <button onclick="collectionUtils.displayButton('availability')" type="button" id="button-availability" class="btn btn-secondary">Availability</button>
 	      	  <button onclick="collectionUtils.displayButton('daysCreated')" type="button" id="button-daysCreated" class="btn btn-secondary">Created Date</button>
 	      	  <button onclick="collectionUtils.displayButton('totalInventory')" type="button" id="button-totalInventory" class="btn btn-secondary">Inventory</button>
-
+	      	  <button onclick="collectionUtils.displayButton('productVariants')" type="button" id="button-productVariants" class="btn btn-secondary">Variants</button>
 	      	</div>
 	      	<div class="mt-2">
 	      		<label for="productsPerRow">Products per row</label>
@@ -141,8 +146,8 @@
 			<label class="card-display-option form-check-label" for="totalInventory">Total Inventory</label>
 		</div>
 		<div class="m-2 form-group form-check">
-			<input type="checkbox" class="form-check-input" id="variantsStock">
-			<label class="card-display-option form-check-label" for="variantsStock">Variants in Stock</label>
+			<input type="checkbox" class="form-check-input" id="productVariants">
+			<label class="card-display-option form-check-label" for="productVariants">Variants</label>
 		</div>
 	</div>
 
@@ -192,7 +197,7 @@
 	      </div>
 	      <div class="modal-body">
 	        <p>Are you sure you want to remove <span id="delete-product-name"></span> from this collection?</p>
-	        <p>This change will be schedule immediately.</p>
+	        <p>This change will be scheduled immediately.</p>
 	      </div>
 	      <div class="modal-footer">
 	      	<button id="delete-product-data" onClick="collectionUtils.removeProduct()" type="button" class="btn btn-primary" data-dismiss="modal">Remove</button>
@@ -204,11 +209,11 @@
 
 	<script>
 		const collectionId = '{{collection_id}}';
-		const limited = false;
-		const error = '{{error | safe}}';
+		const limited = true;
+		const error = "{{error | safe}}";
 		const collectionInfo = {{ collection_data | safe }};
 		const csrfToken = '{{csrf_token() }}';
-		const displayOptions = ['title', 'productPrice', 'availability', 'daysCreated', 'totalInventory', 'unavailable'];
+		const displayOptions = ['title', 'productPrice', 'availability', 'daysCreated', 'totalInventory', 'unavailable', 'productVariants'];
 		var loadRemaining = {% if not next_page %}false{% else %}true{% endif %};
 	</script>
 

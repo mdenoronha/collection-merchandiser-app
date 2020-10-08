@@ -53,6 +53,12 @@ body#collection {
 	margin: 0;
 }
 
+a:not([href]):not([tabindex]):hover,
+a:not([href]):not([tabindex]) {
+	text-decoration: underline;
+	cursor: pointer;
+}
+
 /* Switch */
 /* Provided by https://www.w3schools.com/howto/howto_css_switch.asp */
 
@@ -276,6 +282,31 @@ input:checked + .slider:before {
 	font-weight: bold;
 }
 
+.badge-pill.badge-primary {
+	background-color: #1C225F;
+}
+
+.remove-product-icon,
+.view-product-icon {
+	position: absolute;
+    right: 5px;
+    top: 5px;
+    font-size: 1.3em;
+    color: #1c225f;
+    cursor: pointer;
+}
+
+.remove-product-icon:hover,
+.view-product-icon:hover {
+	text-decoration: none;
+	color: #1c225f;
+}
+
+.view-product-icon {
+	right: unset;
+	left: 5px;
+}
+
 /* SECTION */
 /* Home */
 
@@ -297,4 +328,7 @@ input:checked + .slider:before {
 	display: none;
 }
 
+.collection-link {
+	margin-bottom: 0;
+}
 

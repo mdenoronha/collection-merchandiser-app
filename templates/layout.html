@@ -36,10 +36,12 @@
         // Init
         var AppBridge = window['app-bridge'];
         var createApp = AppBridge.default;
+        var shop = '{{shop}}';
         var app = createApp({
           apiKey: '06508637004c80c9f5f731440fb36242',
-          shopOrigin: '{{shop}}',
+          shopOrigin: shop,
         });
+        var homeLink = '/home/{{ shop | replace(".myshopify.com", "")}}'
     </script>
 
     <script type="text/javascript" src="{{url_for('static', filename='js/app_bridge.js')}}"></script>

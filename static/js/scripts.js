@@ -17,6 +17,12 @@ scripts = {
 		$('[data-toggle="tooltip"]').tooltip();
 	},
 
+	collection_adv: function() {
+		collectionUtils.initTitleBar();
+		collectionUtils.initElements();
+		$('[data-toggle="tooltip"]').tooltip();
+	},
+
 	contact: function() {
 		const titleBarOptions = {
 		  title: 'Contact',
@@ -187,17 +193,23 @@ scripts = {
 		  }
 		  if(selection[0].sortOrder != "MANUAL") {
 		    $('#manual-update').css('display', 'block');
-		    $('#collection-link').attr('data-collection', id).addClass('disabled').css('display', 'none');
+		   	$('.collection-link').attr('data-collection', id).addClass('disabled').css('display', 'none');
+		    $('.collection-link-info').addClass('hide');
 		    $('#collection-admin-link').attr('href', `https://{{shop}}/admin/collections/${id}`);
 		  } else {
 		    $('#manual-update').css('display', 'none');
-		    $('#collection-link').attr('data-collection', id).removeClass('disabled').css('display', 'block');
+		    $('.collection-link').attr('data-collection', id).removeClass('disabled').css('display', 'block');
+		    $('.collection-link-info').removeClass('hide');
 		  }
 		});
 
-		$('#collection-link').on('click', function() {
+		$('.collection-link').on('click', function() {
 		  if(!$(this).hasClass('disabled')) {
-		    redirect.dispatch(Redirect.Action.APP, '/collection-new/' + $(this).data('collection'));
+		  	if($(this).hasClass('collection-link-variant')) {
+		    	redirect.dispatch(Redirect.Action.APP, '/collection-adv/' + $(this).data('collection'));
+		  	} else {
+		    	redirect.dispatch(Redirect.Action.APP, '/collection-new/' + $(this).data('collection'));
+		  	}
 		  }
 		})
 

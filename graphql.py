@@ -61,6 +61,9 @@ def removeProducts(store, access_token, collection_id, product_id):
 
 	data = client.execute(query=query, headers=headers, variables=variables)
 
+	print(store, access_token, collection_id, product_id)
+	print(data)
+
 	return data
 
 # Used for manual sort page

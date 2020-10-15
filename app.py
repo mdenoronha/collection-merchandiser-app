@@ -341,6 +341,7 @@ def collectionNewLoad():
 @app.route('/product-remove', methods=['GET', 'POST'])
 def productRemove():
 
+    print('Remove print check')
     json_data = json.loads(request.data)
     collection_id = json_data.get('collectionId')
     product_id = json_data.get('productId')

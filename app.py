@@ -276,7 +276,7 @@ def index(shop=None):
 def collectionNew(collection_id):
 
     # from queue_work import testQueue
-    collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, None, 0, False)
+    collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, None, 0, True)
     js_collection_data = (json.dumps(collection_data['js_collection_data'])
     .replace(u'<', u'\\u003c')
     .replace(u'>', u'\\u003e')
@@ -297,7 +297,7 @@ def collectionNew(collection_id):
 def collectionAdv(collection_id):
 
     # from queue_work import testQueue
-    collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, None, 0, True)
+    collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, None, 0, False)
     js_collection_data = (json.dumps(collection_data['js_collection_data'])
     .replace(u'<', u'\\u003c')
     .replace(u'>', u'\\u003e')

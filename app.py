@@ -397,7 +397,12 @@ def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0,
 
     error = ''
     next_page = False
-    collection_data = graphql.queryProducts(shop, access_token, collection_id, cursor, withVariants)
+    try:
+      collection_data = graphql.queryProducts(shop, access_token, collection_id, cursor, withVariants)
+    except Exception as e:
+      print(e)
+      return redirect(url_for('install'))
+
     js_collection_data = collection_data
 
     if 'errors' in collection_data:

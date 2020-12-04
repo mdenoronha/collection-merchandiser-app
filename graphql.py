@@ -67,7 +67,7 @@ def removeProducts(store, access_token, collection_id, product_id):
 	return data
 
 # Used for manual sort page
-def queryProducts(store, access_token, collection_id, cursor=None, withVariants=False):
+def queryProducts(store, access_token, collection_id, cursor=None, limited=False):
 
 	headers = {
         "X-Shopify-Access-Token": access_token,
@@ -77,7 +77,7 @@ def queryProducts(store, access_token, collection_id, cursor=None, withVariants=
 	client = GraphqlClient(endpoint="https://" + store + "/admin/api/2020-04/graphql.json")
 	
 
-	if withVariants:
+	if not limited:
 		query = """
 	    query MyQuery($collection: ID!, $cursor: String) {
 		  collection(id: $collection) {

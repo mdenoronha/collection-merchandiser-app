@@ -3,11 +3,11 @@ collectionUtils = {
 		this.createLoading();
 		if(failed == 'true') {
 			if (window.top == window.self) {
-			  window.location.assign('https://' + shopOrigin + '/admin');
+			  window.location.assign('https://' + shopOrigin + '/admin/apps/stock-app-2');
 
 			// If the current window is the 'child', change the parent's URL with Shopify App Bridge's Redirect action
 			} else {
-			  Redirect.create(app).dispatch(Redirect.Action.ADMIN_PATH, '');
+			  Redirect.create(app).dispatch(Redirect.Action.ADMIN_PATH, '/apps/stock-app-2');
 			}
 		} else {
 			if(error) {

@@ -190,6 +190,7 @@ def connect():
 
         if 200 == resp.status_code:
             resp_json = json.loads(resp.text)
+            print(resp_json.get("access_token"), '*********')
 
             index_response = make_response(redirect('home/{0}'.format(request.args.get("shop").replace('.myshopify.com', ''))))
             index_response.headers.add('Set-Cookie','shop={0}; SameSite=None; Secure'.format(request.args.get("shop")))

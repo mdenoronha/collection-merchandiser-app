@@ -340,20 +340,21 @@ collectionUtils = {
 		if(callback) { callback(); }
 	},
 
-	loadAll(callback=null) {
+	loadAll(callback=null, limited=null) {
 		loadRemaining = false;
 		window.sortable.option("disabled", true);
 
 		collectionUtils.initLoading('start');
-		this.loadMore(true, callback);
+		this.loadMore(true, callback, null, limited);
 	},
 
-	loadMore(rerun=false, callback=null, cursor=null) {
+	loadMore(rerun=false, callback=null, cursor=null, limited=null) {
 		window.responses = window.responses || [];
 		const _this = this;
 		save.set({disabled: true})
 		document.querySelector('#load-more').setAttribute('disabled', true);
 		document.querySelector('#load-all').setAttribute('disabled', true);
+		console.log(limited)
 
 		cursor = cursor || document.querySelector('#load-more').getAttribute('data-next-link');
 		if(cursor) {
@@ -376,7 +377,7 @@ collectionUtils = {
 				} else {
 					if(res['data']['next_page'] && rerun) {
 							_this.disableLoadMore();
-							_this.loadMore(true, callback, res['data']['cursor']);
+							_this.loadMore(true, callback, res['data']['cursor'], limited);
 							document.querySelector('#load-more').setAttribute('data-next-link', res['data']['cursor']);
 					} else {
 						if(res['data']['next_page']) { 

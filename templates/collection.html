@@ -156,7 +156,7 @@
 		</div>
 	</div>
 	<button data-next-link="{{cursor}}" id="load-more" {% if not next_page %}disabled{% endif %} type="button" onClick="collectionUtils.loadMore()" class="btn btn-primary small-button">Load More</button>
-	<button {% if not next_page %}disabled{% endif %} id="load-all" type="button" onClick="collectionUtils.loadAll()" class="btn btn-primary small-button">Load All<p><small class="center" id="load-all-time"></small></p></button>
+	<button {% if not next_page %}disabled{% endif %} id="load-all" type="button" onClick="collectionUtils.loadAll(null, true)" class="btn btn-primary small-button">Load All<p><small class="center" id="load-all-time"></small></p></button>
 	</div>
 
 

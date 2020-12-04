@@ -278,7 +278,7 @@ def collectionNew(collection_id):
     # from queue_work import testQueue
     collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, None, 0, True)
     if collection_data == False:
-      return redirect('install/')
+      return redirect('/install')
     js_collection_data = (json.dumps(collection_data['js_collection_data'])
     .replace(u'<', u'\\u003c')
     .replace(u'>', u'\\u003e')
@@ -301,7 +301,7 @@ def collectionAdv(collection_id):
     # from queue_work import testQueue
     collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, None, 0, False)
     if collection_data == False:
-      return redirect('install/')
+      return redirect('/install')
     js_collection_data = (json.dumps(collection_data['js_collection_data'])
     .replace(u'<', u'\\u003c')
     .replace(u'>', u'\\u003e')
@@ -329,7 +329,7 @@ def collectionNewLoad():
     for i in range(10):
         collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, cursor, 0, limited)
         if collection_data == False:
-          return redirect('install/')
+          return redirect('/install')
         all_products = all_products + collection_data['js_collection_data']['data']['collection']['products']['edges']
         if collection_data['next_page'] == False or collection_data['error'] != None: 
             break

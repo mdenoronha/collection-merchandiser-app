@@ -397,10 +397,13 @@ def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0,
 
     error = ''
     next_page = False
-    print(shop)
+    if shop == 'learning-development-store.myshopify.com':
+      print(shop)
+      access_token = 'fajkasd'
     try:
       collection_data = graphql.queryProducts(shop, access_token, collection_id, cursor, withVariants)
     except Exception as e:
+      print('401 Error Print')
       print(e)
       return redirect(url_for('install'))
 

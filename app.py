@@ -279,7 +279,15 @@ def collectionNew(collection_id):
     collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, None, 0, True)
     if collection_data == False:
       index_response = make_response(redirect('/'))
-      return index_response
+      return render_template('collection.html', 
+        failed='true',
+        collection_data=None, 
+        error=None,
+        cursor=None,
+        next_page=None,
+        collection_id=None,
+        shop=getShop(request)
+    )
     js_collection_data = (json.dumps(collection_data['js_collection_data'])
     .replace(u'<', u'\\u003c')
     .replace(u'>', u'\\u003e')
@@ -287,6 +295,7 @@ def collectionNew(collection_id):
     .replace(u"'", u'\\u0027'))
 
     return render_template('collection.html', 
+        failed='false',
         collection_data=js_collection_data, 
         error=collection_data['error'], 
         cursor=collection_data['cursor'], 

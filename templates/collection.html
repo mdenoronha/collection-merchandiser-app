@@ -203,13 +203,29 @@
 	</div>
 
 	<script>
-		const collectionId = '{{collection_id}}';
-		const limited = true;
-		const error = '{{error | safe}}';
-		const collectionInfo = {{ collection_data | safe }};
-		const csrfToken = '{{csrf_token() }}';
-		const displayOptions = ['title', 'productPrice', 'availability', 'daysCreated', 'totalInventory', 'unavailable'];
-		var loadRemaining = {% if not next_page %}false{% else %}true{% endif %};
+		if ({{failed}}) {
+			// If the current window is the 'parent', change the URL by setting location.href
+			if (window.top == window.self) {
+			  window.location.assign('https://' + shopOrigin + '/admin');
+
+			// If the current window is the 'child', change the parent's URL with Shopify App Bridge's Redirect action
+			} else {
+			  const app = createApp({
+			    apiKey: apiKey,
+			    shopOrigin: shopOrigin,
+			  });
+
+			  Redirect.create(app).dispatch(Redirect.Action.ADMIN_PATH, '');
+			}
+		} else {
+			const collectionId = '{{collection_id}}';
+			const limited = true;
+			const error = '{{error | safe}}';
+			const collectionInfo = {{ collection_data | safe }};
+			const csrfToken = '{{csrf_token() }}';
+			const displayOptions = ['title', 'productPrice', 'availability', 'daysCreated', 'totalInventory', 'unavailable'];
+			var loadRemaining = {% if not next_page %}false{% else %}true{% endif %};
+		}
 	</script>
 
 {% endblock %}

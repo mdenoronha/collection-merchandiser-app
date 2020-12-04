@@ -426,6 +426,7 @@ def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0,
     except Exception as e:
       print('401 Error Print')
       print(e)
+      print(shop)
       return False
 
     js_collection_data = collection_data

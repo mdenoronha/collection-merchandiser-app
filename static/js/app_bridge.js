@@ -16,10 +16,9 @@ const homeButton = Button.create(app, {label: 'Home'});
 const contactButton = Button.create(app, {label: 'Contact'});
 const instructionsButton = Button.create(app, {label: 'Instructions'});
 const privacyButton = Button.create(app, {label: 'Privacy Policy'});
-const automationsButton = Button.create(app, {label: 'Automations'});
 const save = Button.create(app, {label: 'Save'});
 
-const groupButton = ButtonGroup.create(app, {label: 'Navigation', buttons: [homeButton, contactButton,automationsButton, instructionsButton, privacyButton]});
+const groupButton = ButtonGroup.create(app, {label: 'Navigation', buttons: [homeButton, contactButton, instructionsButton, privacyButton]});
 // Secondary buttons actions
 const viewContact = contactButton.subscribe(Button.Action.CLICK, data => {
   redirect.dispatch(Redirect.Action.APP, '/contact');
@@ -32,9 +31,6 @@ const viewInstructions = instructionsButton.subscribe(Button.Action.CLICK, data 
 });
 const viewPrivacy = privacyButton.subscribe(Button.Action.CLICK, data => {
   redirect.dispatch(Redirect.Action.APP, '/privacy-policy');
-});
-const viewAutomations = automationsButton.subscribe(Button.Action.CLICK, data => {
-  redirect.dispatch(Redirect.Action.APP, '/automations');
 });
 const rulesCollectionPicker = ResourcePicker.create(app, {
   resourceType: ResourcePicker.ResourceType.Collection,

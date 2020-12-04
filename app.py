@@ -190,7 +190,6 @@ def connect():
 
         if 200 == resp.status_code:
             resp_json = json.loads(resp.text)
-            print(resp_json.get("access_token"), '*********')
 
             index_response = make_response(redirect('home/{0}'.format(request.args.get("shop").replace('.myshopify.com', ''))))
             index_response.headers.add('Set-Cookie','shop={0}; SameSite=None; Secure'.format(request.args.get("shop")))
@@ -279,7 +278,6 @@ def collectionNew(collection_id):
     # from queue_work import testQueue
     collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, None, 0, True)
     if collection_data == False:
-      index_response = make_response(redirect('/'))
       return render_template('collection.html', 
         failed='true',
         collection_data='null', 
@@ -312,8 +310,15 @@ def collectionAdv(collection_id):
     # from queue_work import testQueue
     collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, None, 0, False)
     if collection_data == False:
-      index_response = make_response(redirect('/'))
-      return index_response
+      return render_template('collection_adv.html', 
+        failed='true',
+        collection_data='null', 
+        error=None,
+        cursor=None,
+        next_page=None,
+        collection_id=None,
+        shop=getShop(request)
+      )
     js_collection_data = (json.dumps(collection_data['js_collection_data'])
     .replace(u'<', u'\\u003c')
     .replace(u'>', u'\\u003e')
@@ -321,6 +326,7 @@ def collectionAdv(collection_id):
     .replace(u"'", u'\\u0027'))
 
     return render_template('collection_adv.html', 
+        failed='false',
         collection_data=js_collection_data, 
         error=collection_data['error'], 
         cursor=collection_data['cursor'], 
@@ -341,8 +347,7 @@ def collectionNewLoad():
     for i in range(10):
         collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, cursor, 0, limited)
         if collection_data == False:
-          index_response = make_response(redirect('/'))
-          return index_response
+          return False
         all_products = all_products + collection_data['js_collection_data']['data']['collection']['products']['edges']
         if collection_data['next_page'] == False or collection_data['error'] != None: 
             break

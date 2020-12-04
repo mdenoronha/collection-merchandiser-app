@@ -1,65 +1,75 @@
 collectionUtils = {
 	initElements() {
 		this.createLoading();
-		if(error) {
-			collectionUtils.showMessage('Error', 'Unexpected error. Please try again');
-		} else {
-			let productsTime;
-			let products; 
-			productsToAdd = {};
+		if(failed == 'true') {
+			if (window.top == window.self) {
+			  window.location.assign('https://' + shopOrigin + '/admin');
 
-			try {
-				// Manual error
-				if(collectionInfo['data']['collection']['sortOrder'] != 'MANUAL') {
-					document.querySelector('#manual-error').classList.remove('hide');
-					// document.querySelectorAll('.display-options').forEach(function(e) { e.classList.add('hide') });
-					// document.querySelectorAll('.btn').forEach(function(e) { e.classList.add('hide') });
-				}
-
-				products = collectionInfo.data.collection.products.edges;
-				let productsCount = collectionInfo.data.collection.productsCount;
-				if(productsCount > 50) {
-					let estimatedMultiplier = limited ? 8 : 3
-					let estimatedTime = productsCount / 50 * estimatedMultiplier;
-					document.querySelector('#load-all-time').innerHTML = estimatedTime > 2 ? `Estimated load time: ${estimatedTime.toFixed(0)} secs` : '';
-					if(estimatedTime > 2) {
-						document.querySelector('#sort-all-time').innerHTML = `Quick Sort will reorder the products below based on your selection. With the size of this collection, sorting may take up to ${(estimatedTime * 1.5).toFixed(0)} secs to complete. Don't forget to Save when you're happy with your changes.`
-					} else {
-						document.querySelector('#sort-all-time')[0].remove();
-					}
-				}
-				if(productsCount > 500) {
-					let largeCollectionMessage = document.querySelector('#large-collection-error');
-					if(largeCollectionMessage) {
-						document.querySelector('#large-collection-error').classList.remove('hide');
-					}
-				}
-			} catch(e) {
-				throw e;
-				collectionUtils.showMessage('Error', 'Unexpected error. Please try again');
+			// If the current window is the 'child', change the parent's URL with Shopify App Bridge's Redirect action
+			} else {
+			  Redirect.create(app).dispatch(Redirect.Action.ADMIN_PATH, '');
 			}
-			try {
-				for(let product of products) {
-					try {
-						productsToAdd[product.node.id] = new Product(product.node);
-					} catch(e) {
-						throw e;
-						collectionUtils.showMessage('Error', 'Unexpected error. Please try again');
-					}
-				}
-
-				window.sortHelper = new sortHelper();
-				collectionUtils.createCards(productsToAdd);
-				document.querySelector('#productsPerRow').addEventListener('change', function(e) {
-					collectionUtils.updateRowsInfo(e.target.value);
-					utils.setCookie('rows', (e.target.value).replace('%', ''), 200);
-				});
-				collectionUtils.updateRowsInfo();
-				collectionUtils.initSortable();
-				collectionUtils.initDisplayInfo();
-			} catch(e) {
-				console.log('Error', e);
+		} else {
+			if(error) {
 				collectionUtils.showMessage('Error', 'Unexpected error. Please try again');
+			} else {
+				let productsTime;
+				let products; 
+				productsToAdd = {};
+
+				try {
+					// Manual error
+					if(collectionInfo['data']['collection']['sortOrder'] != 'MANUAL') {
+						document.querySelector('#manual-error').classList.remove('hide');
+						// document.querySelectorAll('.display-options').forEach(function(e) { e.classList.add('hide') });
+						// document.querySelectorAll('.btn').forEach(function(e) { e.classList.add('hide') });
+					}
+
+					products = collectionInfo.data.collection.products.edges;
+					let productsCount = collectionInfo.data.collection.productsCount;
+					if(productsCount > 50) {
+						let estimatedMultiplier = limited ? 8 : 3
+						let estimatedTime = productsCount / 50 * estimatedMultiplier;
+						document.querySelector('#load-all-time').innerHTML = estimatedTime > 2 ? `Estimated load time: ${estimatedTime.toFixed(0)} secs` : '';
+						if(estimatedTime > 2) {
+							document.querySelector('#sort-all-time').innerHTML = `Quick Sort will reorder the products below based on your selection. With the size of this collection, sorting may take up to ${(estimatedTime * 1.5).toFixed(0)} secs to complete. Don't forget to Save when you're happy with your changes.`
+						} else {
+							document.querySelector('#sort-all-time')[0].remove();
+						}
+					}
+					if(productsCount > 500) {
+						let largeCollectionMessage = document.querySelector('#large-collection-error');
+						if(largeCollectionMessage) {
+							document.querySelector('#large-collection-error').classList.remove('hide');
+						}
+					}
+				} catch(e) {
+					throw e;
+					collectionUtils.showMessage('Error', 'Unexpected error. Please try again');
+				}
+				try {
+					for(let product of products) {
+						try {
+							productsToAdd[product.node.id] = new Product(product.node);
+						} catch(e) {
+							throw e;
+							collectionUtils.showMessage('Error', 'Unexpected error. Please try again');
+						}
+					}
+
+					window.sortHelper = new sortHelper();
+					collectionUtils.createCards(productsToAdd);
+					document.querySelector('#productsPerRow').addEventListener('change', function(e) {
+						collectionUtils.updateRowsInfo(e.target.value);
+						utils.setCookie('rows', (e.target.value).replace('%', ''), 200);
+					});
+					collectionUtils.updateRowsInfo();
+					collectionUtils.initSortable();
+					collectionUtils.initDisplayInfo();
+				} catch(e) {
+					console.log('Error', e);
+					collectionUtils.showMessage('Error', 'Unexpected error. Please try again');
+				}
 			}
 		}
 	},

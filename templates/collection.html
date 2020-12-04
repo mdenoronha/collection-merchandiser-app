@@ -210,6 +210,8 @@
 
 			// If the current window is the 'child', change the parent's URL with Shopify App Bridge's Redirect action
 			} else {
+			  var actions = AppBridge.actions;
+			  var Redirect = actions.Redirect;
 			  Redirect.create(app).dispatch(Redirect.Action.ADMIN_PATH, '');
 			}
 		} else {

@@ -397,6 +397,7 @@ def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0,
 
     error = ''
     next_page = False
+    print(shop)
     try:
       collection_data = graphql.queryProducts(shop, access_token, collection_id, cursor, withVariants)
     except Exception as e:

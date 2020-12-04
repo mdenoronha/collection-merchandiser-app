@@ -77,7 +77,8 @@ def queryProducts(store, access_token, collection_id, cursor=None, limited=False
 	client = GraphqlClient(endpoint="https://" + store + "/admin/api/2020-04/graphql.json")
 	
 	print(limited == False)
-	if limited == False:
+	print(limited == 'false')
+	if limited == False or limited == 'false':
 		query = """
 	    query MyQuery($collection: ID!, $cursor: String) {
 		  collection(id: $collection) {

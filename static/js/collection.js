@@ -351,7 +351,6 @@ collectionUtils = {
 	loadMore(rerun=false, callback=null, cursor=null) {
 		window.responses = window.responses || [];
 		const _this = this;
-		console.log(limited)
 		save.set({disabled: true})
 		document.querySelector('#load-more').setAttribute('disabled', true);
 		document.querySelector('#load-all').setAttribute('disabled', true);

@@ -281,7 +281,7 @@ def collectionNew(collection_id):
       index_response = make_response(redirect('/'))
       return render_template('collection.html', 
         failed='true',
-        collection_data=None, 
+        collection_data='', 
         error=None,
         cursor=None,
         next_page=None,

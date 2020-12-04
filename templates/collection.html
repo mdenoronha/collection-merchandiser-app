@@ -202,11 +202,9 @@
 	  </div>
 	</div>
 
-	<meta id="limited" data-limited="true">
-
 	<script>
 		const collectionId = '{{collection_id}}';
-		const limited = false;
+		const limited = true;
 		const error = '{{error | safe}}';
 		const collectionInfo = {{ collection_data | safe }};
 		const csrfToken = '{{csrf_token() }}';

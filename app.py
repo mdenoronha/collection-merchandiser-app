@@ -346,6 +346,7 @@ def collectionNewLoad():
     
     for i in range(10):
         collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, cursor, 0, limited)
+        print(collection_data)
         if collection_data == False:
           return False
         all_products = all_products + collection_data['js_collection_data']['data']['collection']['products']['edges']

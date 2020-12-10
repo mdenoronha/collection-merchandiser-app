@@ -52,8 +52,8 @@ collectionUtils = {
 						try {
 							productsToAdd[product.node.id] = new Product(product.node);
 						} catch(e) {
-							throw e;
 							collectionUtils.showMessage('Error', 'Unexpected error. Please try again');
+							throw e;
 						}
 					}
 
@@ -386,7 +386,7 @@ collectionUtils = {
 				} else {
 					if(res['data']['next_page'] && rerun) {
 							_this.disableLoadMore();
-							_this.loadMore(limited, true, callback, res['data']['cursor']);
+							_this.loadMore(true, callback, res['data']['cursor']);
 							document.querySelector('#load-more').setAttribute('data-next-link', res['data']['cursor']);
 					} else {
 						if(res['data']['next_page']) { 

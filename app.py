@@ -306,34 +306,34 @@ def collectionNew(collection_id):
 # Collection page
 @app.route('/collection-adv/<collection_id>', methods=['GET', 'POST'])
 def collectionAdv(collection_id):
-
-    # from queue_work import testQueue
-    collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, None, 0, False)
-    if collection_data == False:
-      return render_template('collection_adv.html', 
-        failed='true',
-        collection_data='null', 
-        error=None,
-        cursor=None,
-        next_page=None,
-        collection_id=None,
-        shop=getShop(request)
-      )
-    js_collection_data = (json.dumps(collection_data['js_collection_data'])
-    .replace(u'<', u'\\u003c')
-    .replace(u'>', u'\\u003e')
-    .replace(u'&', u'\\u0026')
-    .replace(u"'", u'\\u0027'))
-
+    
+  # from queue_work import testQueue
+  collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, None, 0, False)
+  if collection_data == False:
     return render_template('collection_adv.html', 
-        failed='false',
-        collection_data=js_collection_data, 
-        error=collection_data['error'], 
-        cursor=collection_data['cursor'], 
-        next_page=collection_data['next_page'], 
-        collection_id=collection_id, 
-        shop=getShop(request)
+      failed='true',
+      collection_data='null', 
+      error=None,
+      cursor=None,
+      next_page=None,
+      collection_id=None,
+      shop=getShop(request)
     )
+  js_collection_data = (json.dumps(collection_data['js_collection_data'])
+  .replace(u'<', u'\\u003c')
+  .replace(u'>', u'\\u003e')
+  .replace(u'&', u'\\u0026')
+  .replace(u"'", u'\\u0027'))
+
+  return render_template('collection_adv.html', 
+      failed='false',
+      collection_data=js_collection_data, 
+      error=collection_data['error'], 
+      cursor=collection_data['cursor'], 
+      next_page=collection_data['next_page'], 
+      collection_id=collection_id, 
+      shop=getShop(request)
+  )
 
 # Collection page ajax
 @app.route('/collection-new-load', methods=['GET', 'POST'])
@@ -345,8 +345,8 @@ def collectionNewLoad():
     all_products = []
     
     for i in range(10):
+        print(cursor)
         collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, cursor, 0, limited)
-        print(collection_data)
         if collection_data == False:
           return False
         all_products = all_products + collection_data['js_collection_data']['data']['collection']['products']['edges']
@@ -360,7 +360,7 @@ def collectionNewLoad():
         .replace(u'&', u'\\u0026')
         .replace(u"'", u'\\u0027'))
 
-    return {'data': collection_data}
+    return {'data': collection_data }
 
 @csrf.exempt
 @app.route('/product-remove', methods=['GET', 'POST'])
@@ -399,11 +399,6 @@ def reorderQuery(shop, access_token, collection_id, changes, rerun_count=0):
 
     error = ''
     reorder_status = graphql.reorderProducts(shop, access_token, collection_id, changes)
-    js_reorder_status = (json.dumps(reorder_status)
-        .replace(u'<', u'\\u003c')
-        .replace(u'>', u'\\u003e')
-        .replace(u'&', u'\\u0026')
-        .replace(u"'", u'\\u0027'))
     
     if 'errors' in reorder_status:
         if len(reorder_status['errors']) > 0:

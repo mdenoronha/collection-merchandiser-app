@@ -82,14 +82,11 @@ collectionUtils = {
 			let positionChanges = [];
 			let last = false;
 			allProductCards.forEach(function(e, i) {
-			    let defaultPosition = e.getAttribute('data-positon');
 			    let productId = e.getAttribute('data-product-id');
-			    if(i != defaultPosition && productId) {
-			    	positionChanges.push({
-			    		'newPosition': i.toString(),
-			    		'id': productId
-			    	})
-			    };
+			    positionChanges.push({
+					'newPosition': i.toString(),
+					'id': productId
+				})
 			})
 
 			if(positionChanges != [] && positionChanges) {

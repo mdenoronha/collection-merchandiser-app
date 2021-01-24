@@ -278,6 +278,7 @@ def index2(shop=None):
   if not shop:
       shop = request.args.get("shop")
   else:
+    if 'myshopify.com' not in shop:
       shop = '{0}.myshopify.com'.format(shop)
 
   error = False

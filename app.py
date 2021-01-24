@@ -281,8 +281,9 @@ def index2(shop=None):
     if 'myshopify.com' not in shop:
       shop = '{0}.myshopify.com'.format(shop)
   access_token = request.cookies.get("access_token")
+  
   if access_token == None:
-    return redirect(url_for('install'))
+    render_template("install.html", shop=shop)
 
   error = False
   cursor = request.args.get('cursor')

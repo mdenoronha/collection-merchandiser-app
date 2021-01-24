@@ -280,13 +280,16 @@ def index2(shop=None):
   else:
     if 'myshopify.com' not in shop:
       shop = '{0}.myshopify.com'.format(shop)
+  access_token = request.cookies.get("access_token")
+  print('here')
+  print(access_token)
 
   error = False
   cursor = request.args.get('cursor')
   direction = request.args.get('direction')
   searchPar = request.args.get('search')
   search = '' if searchPar == None or searchPar == ''  else 'title:*' + searchPar + '*'
-  collections = graphql.queryCollections(shop, request.cookies.get("access_token"), search, cursor, direction)
+  collections = graphql.queryCollections(shop, access_token, search, cursor, direction)
   if collections == None:
     error = True
   else:

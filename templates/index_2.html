@@ -26,7 +26,7 @@
   <input type="text" class="form-control" value='{% if search %}{{search}}{% endif %}' id="search-form"
     placeholder="Search Collection Title" aria-label="Search collection Title" aria-describedby="button-addon2">
   <div class="input-group-append">
-    <a href="/home-2/{{shop}}?search={% if search %}{{search}}{% endif %}" class="btn btn-primary"
+    <a href="/home/{{shop}}?search={% if search %}{{search}}{% endif %}" class="btn btn-primary"
       type="button" id="search-button">Search</a>
   </div>
 </div>
@@ -128,12 +128,12 @@
   <ul class="pagination">
     {% if collections['data']['collections']['pageInfo']['hasPreviousPage'] %}
     <li class="page-item"><a class="page-link" id="page-next"
-        href="/home-2/{{shop}}?direction=prev&cursor={{collections['data']['collections']['edges'][0]['cursor']}}&search={% if search %}{{search}}{% endif %}">Previous</a>
+        href="/home/{{shop}}?direction=prev&cursor={{collections['data']['collections']['edges'][0]['cursor']}}&search={% if search %}{{search}}{% endif %}">Previous</a>
     </li>
     {% endif %}
     {% if collections['data']['collections']['pageInfo']['hasNextPage'] %}
     <li class="page-item"><a class="page-link" id="page-prev"
-        href="/home-2/{{shop}}?direction=next&cursor={{collections['data']['collections']['edges'][collections['data']['collections']['edges']|length - 1]['cursor']}}&search={% if search %}{{search}}{% endif %}">Next</a>
+        href="/home/{{shop}}?direction=next&cursor={{collections['data']['collections']['edges'][collections['data']['collections']['edges']|length - 1]['cursor']}}&search={% if search %}{{search}}{% endif %}">Next</a>
     </li>
     {% endif %}
   </ul>

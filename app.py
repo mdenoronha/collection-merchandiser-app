@@ -257,8 +257,8 @@ def product_create_sort():
 
 
 # Homepage
-@app.route('/home')
-@app.route('/home/<shop>')
+@app.route('/home-2')
+@app.route('/home-2/<shop>')
 def index(shop=None):
 
   if not shop:
@@ -271,8 +271,8 @@ def index(shop=None):
   return resp
 
 # Homepage
-@app.route('/home-2')
-@app.route('/home-2/<shop>')
+@app.route('/home')
+@app.route('/home/<shop>')
 def index2(shop=None):
 
   if not shop:

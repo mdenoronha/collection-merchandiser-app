@@ -256,7 +256,7 @@ scripts = {
 		})
 
 		function updateSearch(searchTerm) {
-			searchButton.setAttribute('href', '/home-2/' + shop + '?search=' + searchTerm);
+			searchButton.setAttribute('href', '/home/' + shop + '?search=' + searchTerm);
 		}
 
 		document.querySelector('#search-form').addEventListener('input', (e) => updateSearch(e.target.value));

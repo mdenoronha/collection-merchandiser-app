@@ -206,6 +206,70 @@ def queryCollectionsOfProducts(store, access_token, product_id, cursor=None):
 
 	return data
 
+
+def queryCollections(store, access_token, search, cursor, direction):
+
+	headers = {
+		"X-Shopify-Access-Token": access_token,
+		"Content-Type": "application/json"
+	}
+
+	client = GraphqlClient(endpoint="https://" + store +
+						   "/admin/api/2020-04/graphql.json")
+
+	if direction == 'prev':
+		query = """
+		query MyQuery($cursor: String, $search: String) {
+			collections(last: 20, before: $cursor, query:$search) {
+				edges {
+					cursor
+					node {
+						title
+						id
+						sortOrder
+						handle
+						image {
+							transformedSrc(maxHeight: 200)
+						}
+					}
+				}
+				pageInfo {
+					hasNextPage
+					hasPreviousPage
+				}
+			}
+		}
+		"""
+	else:
+		query = """
+		query MyQuery($cursor: String, $search: String) {
+			collections(first: 20, after: $cursor, query:$search) {
+				edges {
+					cursor
+					node {
+						title
+						id
+						sortOrder
+						handle
+						image {
+							transformedSrc(maxHeight: 200)
+						}
+					}
+				}
+				pageInfo {
+					hasNextPage
+					hasPreviousPage
+				}
+			}
+		}
+		"""
+
+	variables = {'cursor': cursor, 'search': search}
+
+	data = client.execute(query=query, headers=headers, variables=variables)
+
+	return data
+
 def updateCollection(store, access_token, collection, sortOrder):
 
 	headers = {

@@ -282,7 +282,7 @@ def index2(shop=None):
       shop = '{0}.myshopify.com'.format(shop)
   access_token = request.cookies.get("access_token")
   if access_token == None:
-    render_template("error_uninstall.html", shop=shop)
+    return render_template("error_uninstall.html", shop=shop)
 
   error = False
   cursor = request.args.get('cursor')

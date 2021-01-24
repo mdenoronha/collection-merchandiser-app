@@ -282,7 +282,7 @@ def index2(shop=None):
       shop = '{0}.myshopify.com'.format(shop)
   access_token = request.cookies.get("access_token")
   if access_token == None:
-    return render_template('index_2.html', shop=shop, collections=[], error=False, search=None, rules=None)
+    return render_template('index_2.html', shop=shop, collections=None, error=False, search=None, rules=None)
 
   error = False
   cursor = request.args.get('cursor')

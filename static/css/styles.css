@@ -38,10 +38,16 @@ body#collection {
 	cursor: pointer; 
 }
 
+.btn-primary.disabled, .btn-primary:disabled {
+    color: #fff;
+    background-color: #7c8084;
+    border-color: #95a5b7;
+}
+
 .small-button:disabled,
 .small-button {
-	background-color: #3f4eae; 
-	border-color: #3f4eae; 
+	background-color: #939ca7;
+    border-color: #797979;
 	cursor: pointer; 
 	margin: 10px auto; 
 	width: 50%; 
@@ -59,7 +65,6 @@ body#collection {
     width: 120px;
     display: block;
 }
-
 
 a:not([href]):not([tabindex]):hover,
 a:not([href]):not([tabindex]) {
@@ -131,6 +136,11 @@ input:checked + .slider:before {
 .inline-input-medium {
 	display: inline;
 	width: 175px;
+}
+
+.inline-input-large {
+	display: inline;
+	width: 250px;
 }
 
 
@@ -340,3 +350,21 @@ input:checked + .slider:before {
 	margin-bottom: 0;
 }
 
+.sort-selector {
+	width: 200px;
+}
+
+.toast {
+	position: fixed; 
+	top: 10px; 
+	right: 10px;
+}
+
+.rules-container {
+	max-width: 290px;
+}
+
+.img-collection {
+	width: 30px;
+    border-radius: 100%;
+}

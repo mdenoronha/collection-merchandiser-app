@@ -235,6 +235,9 @@ scripts = {
 		});
 
 		let selects = document.querySelectorAll('.sort-select')
+		if (typeof shop === 'undefined') {
+			let shop = ''
+		}
 
 		$('[data-toggle="tooltip"]').tooltip()
 
@@ -253,7 +256,7 @@ scripts = {
 		})
 
 		function updateSearch(searchTerm) {
-			searchButton.setAttribute('href', '/home/learning-development-store?search=' + searchTerm);
+			searchButton.setAttribute('href', '/home-2/' + shop + '?search=' + searchTerm);
 		}
 
 		document.querySelector('#search-form').addEventListener('input', (e) => updateSearch(e.target.value));

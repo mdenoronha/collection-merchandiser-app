@@ -269,7 +269,7 @@ def index(shop=None):
   else:
       shop = '{0}.myshopify.com'.format(shop)
 
-  resp = make_response(render_template('index.html', request=request))
+  resp = make_response(render_template('index.html', shop=shop))
 
   return resp
 
@@ -286,7 +286,7 @@ def index2(shop=None):
   access_token = request.cookies.get("access_token")
   print(access_token)
   if access_token == None:
-    return redirect(url_for('install', shop=shop))
+    return redirect(url_for('install', request=request))
 
   error = False
   cursor = request.args.get('cursor')

@@ -53,6 +53,14 @@ body#collection {
 	margin: 0;
 }
 
+.cross-button {
+    margin-top: 5px;
+    margin-left: auto;
+    width: 120px;
+    display: block;
+}
+
+
 a:not([href]):not([tabindex]):hover,
 a:not([href]):not([tabindex]) {
 	text-decoration: underline;

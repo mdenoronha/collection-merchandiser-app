@@ -26,7 +26,7 @@ def reorderProducts(store, access_token, collection_id, changes):
 
 	if not 'gid://shopify/Collection/' in collection_id:
 		collection_id = 'gid://shopify/Collection/{0}'.format(collection_id)
-	variables = {'id': collection_id, 'moves': changes};
+	variables = {'id': collection_id, 'moves': changes}
 
 	data = client.execute(query=query, headers=headers, variables=variables)
 
@@ -57,7 +57,7 @@ def removeProducts(store, access_token, collection_id, product_id):
 
 	if not 'gid://shopify/Collection/' in collection_id:
 		collection_id = 'gid://shopify/Collection/{0}'.format(collection_id)
-	variables = {'id': collection_id, 'productIds': [product_id]};
+	variables = {'id': collection_id, 'productIds': [product_id]}
 
 	data = client.execute(query=query, headers=headers, variables=variables)
 
@@ -163,7 +163,7 @@ def queryProducts(store, access_token, collection_id, cursor=None, limited=False
 		"""
 	
 
-	variables = {'collection': 'gid://shopify/Collection/{0}'.format(collection_id), 'cursor': cursor};
+	variables = {'collection': 'gid://shopify/Collection/{0}'.format(collection_id), 'cursor': cursor}
 
 	data = client.execute(query=query, headers=headers, variables=variables)
 
@@ -201,6 +201,39 @@ def queryCollectionsOfProducts(store, access_token, product_id, cursor=None):
 	"""
 
 	variables = {'product': 'gid://shopify/Product/{0}'.format(product_id), 'cursor': cursor};
+
+	data = client.execute(query=query, headers=headers, variables=variables)
+
+	return data
+
+def updateCollection(store, access_token, collection, sortOrder):
+
+	headers = {
+		"X-Shopify-Access-Token": access_token,
+		"Content-Type": "application/json"
+	}
+
+	client = GraphqlClient(endpoint="https://" + store +
+						   "/admin/api/2020-04/graphql.json")
+
+	query = """
+		mutation collectionUpdate($input: CollectionInput!) {
+			collectionUpdate(input: $input) {
+				collection {
+					id
+				}
+				job {
+					id
+				}
+				userErrors {
+					field
+					message
+				}
+			}
+		}
+	"""
+
+	variables = {'input': {'id': collection, 'sortOrder': sortOrder }}
 
 	data = client.execute(query=query, headers=headers, variables=variables)
 

@@ -270,6 +270,50 @@ def index(shop=None):
 
   return resp
 
+# Homepage
+@app.route('/home-2')
+@app.route('/home-2/<shop>')
+def index2(shop=None):
+
+  if not shop:
+      shop = request.args.get("shop")
+  else:
+      shop = '{0}.myshopify.com'.format(shop)
+
+  error = False
+  cursor = request.args.get('cursor')
+  direction = request.args.get('direction')
+  searchPar = request.args.get('search')
+  search = '' if searchPar == None or searchPar == ''  else 'title:*' + searchPar + '*'
+  collections = graphql.queryCollections(shop, request.cookies.get("access_token"), search, cursor, direction)
+  if collections == None:
+    error = True
+  else:
+    if 'errors' in collections:
+      error = True
+
+  # stores = mongo.db.local_stores
+  # rules = stores.find_one({'store.name': shop})
+  rules = None
+
+  resp = make_response(render_template('index_2.html', shop=shop, collections=collections, error=error, search=searchPar, rules=rules))
+
+  return resp
+
+
+# Update collection sort order
+@csrf.exempt
+@app.route('/update-sort', methods=['POST'])
+def updateSort():
+
+  response = request.get_json()
+  store = getShop(request)
+  collection = response['collection']
+  sortOrder = response['sortMethod']
+  access_token = request.cookies.get("access_token")
+
+  result = graphql.updateCollection(store, access_token, collection, sortOrder)
+  return json.dumps({'status': result}), 200, {'ContentType':'application/json'} 
 
 # Collection page
 @app.route('/collection-new/<collection_id>', methods=['GET', 'POST'])

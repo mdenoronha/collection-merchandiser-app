@@ -222,6 +222,153 @@ scripts = {
 		  },
 		};
 		const myTitleBar = TitleBar.create(app, titleBarOptions);
+	},
+
+	index_2: function () {
+		// Init CSFF Token
+		$.ajaxSetup({
+			beforeSend: function (xhr, settings) {
+				if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+					xhr.setRequestHeader("X-CSRFToken", csrf_token);
+				}
+			}
+		});
+
+		let selects = document.querySelectorAll('.sort-select')
+
+		$('[data-toggle="tooltip"]').tooltip()
+
+		// Search
+		let searchButton = document.querySelector('#search-button')
+		// Toast
+		let $toast = $('#collection-update-toast')
+		$toast.toast({
+			'delay': 2000,
+		});
+
+		
+		// Redirects
+		$('#instructions-alert-redirect').on('click', function () {
+			redirect.dispatch(Redirect.Action.APP, '/instructions');
+		})
+
+		function updateSearch(searchTerm) {
+			searchButton.setAttribute('href', '/home/learning-development-store?search=' + searchTerm);
+		}
+
+		document.querySelector('#search-form').addEventListener('input', (e) => updateSearch(e.target.value));
+		document.querySelector('#search-form').addEventListener('propertychange', (e) => updateSearch(e.target.value));
+
+		$('.collection-link').on('click', function () {
+			if (!$(this).hasClass('disabled')) {
+				if ($(this).hasClass('collection-link-variant')) {
+					redirect.dispatch(Redirect.Action.APP, '/collection-adv/' + $(this).data('collection'));
+				} else {
+					redirect.dispatch(Redirect.Action.APP, '/collection-new/' + $(this).data('collection'));
+				}
+			}
+		})
+
+		// If collection sort should update buttons
+		function updateCollectionButtons(sortMethod, collection) {
+			let buttons = document.querySelectorAll(`p[data-collection="${collection}"]`);
+			let rulesWarning = document.querySelector(`#rules-warning-${collection}`)
+			let standardMess = 'A host of features for lightening fast sorting';
+			let variantMess = 'Add variant information but reduced sorting speed';
+			let disabledMess = 'Only manually sorted collections can be sorted';
+
+			// if (sortMethod == 'MANUAL') {
+			// 	rulesWarning.classList.add('d-none');
+			// } else {
+			// 	rulesWarning.classList.remove('d-none');
+			// }
+
+				buttons.forEach(function(el) {
+					if(sortMethod == 'MANUAL') {
+						el.classList.remove('disabled')
+						if (el.classList.contains('collection-link-variant')) {
+							el.setAttribute('data-original-title', standardMess)
+						} else {
+							el.setAttribute('data-original-title', variantMess)
+						}
+					} else {
+						el.classList.add('disabled')
+						el.setAttribute('data-original-title', disabledMess)
+					}
+				})
+		}
+
+		// Collection sort
+		let sortSelects = document.querySelectorAll('.sort-select');
+		if(sortSelects) {
+			sortSelects.forEach(function(el) {
+				el.addEventListener('change', function() {
+					$toast.toast('hide');
+					selects.forEach(function(el) {
+						el.setAttribute('disabled', true)
+					});
+					let collectionId = el.getAttribute('data-collection');
+					let sortMethod = el.value
+
+					$.ajax({
+						url: 'https://shopify-stock-app.herokuapp.com/update-sort',
+						type: 'POST',
+						contentType: "application/json",
+						data: JSON.stringify({
+							'collection': collectionId,
+							'sortMethod': sortMethod
+						}),
+						success: function (result) {
+							try {
+								result =  JSON.parse(result)
+								console.log(result)
+								if(result['status']['data']['collectionUpdate']['userErrors'].length > 0) {
+									$toast.find('.toast-body').text('Error: Collection update failed')
+									$toast.toast('show')
+								} else if (result['status']['data']['collectionUpdate']['job'] == null) {
+									$toast.find('.toast-body').text('Success: Collection updated')
+									$toast.toast('show')
+									updateCollectionButtons(sortMethod, collectionId.replace('gid://shopify/Collection/', ''))
+								} else if(result['status']['data']['collectionUpdate']['job']['done'] == false) {
+									$toast.find('.toast-body').text('Success: Collection update scheduled')
+									$toast.toast('show')
+									updateCollectionButtons(sortMethod, collectionId.replace('gid://shopify/Collection/', ''))
+								} else {
+									$toast.find('.toast-body').text('Success: Collection update scheduled')
+									$toast.toast('show')
+									updateCollectionButtons(sortMethod, collectionId.replace('gid://shopify/Collection/', ''))
+								}
+							} catch (e) {
+								console.log(e)
+								$toast.find('.toast-body').text('Error: Collection update failed')
+								$toast.toast('show')
+							} finally {
+								selects.forEach(function(el) {
+									el.removeAttribute('disabled')
+								})
+							}
+						},
+						error: function(e) {
+							console.log(e)
+							$toast.find('.toast-body').text('Error: Collection update failed')
+							selects.forEach(function(el) {
+								el.removeAttribute('disabled')
+							})
+						}
+					})
+				})
+			})
+		}
+
+		// Title bar
+		const titleBarOptions = {
+			title: 'Home',
+			buttons: {
+				secondary: [groupButton]
+			},
+		};
+		const myTitleBar = TitleBar.create(app, titleBarOptions);
+
 	}
 }
 

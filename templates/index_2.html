@@ -1,0 +1,162 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1>Collection Merchandiser</h1>
+<p>Save yourself from lost sales with the Collection Merchandiser. Promote the right producrts with ease.</p>
+
+<div id="instructions-alert" class="alert alert-warning alert-instructions" role="alert">
+  <span id="instructions-alert-close">X</span>
+  First time here? Go to <span id="instructions-alert-redirect">Instructions</span> for help on getting started.
+</div>
+
+<div class="alert alert-success" role="alert">
+  <h4 class="alert-heading">Introducing: Personalised Merchandising</h4>
+  <p>Automatically reorder products on a collection page based on a customer's viewing/buying habits.</p>
+  <hr>
+  <ul>
+    <li>Intelligent machine learning analyses customers behaviour and orders collections based on what customers will likely buy</li>
+    <li>Automatically push down low or out of stock products</li>
+    <li>Add custom collection page filters based on product tags</li>
+    <li>Make more sales</li>
+  </ul>
+  <a type="button" href="https://apps.shopify.com/personalised-collection-sort" target="_blank" class="btn btn-success cross-button">Learn More</a>
+</div>
+
+<div class="input-group mb-3">
+  <input type="text" class="form-control" value='{% if search %}{{search}}{% endif %}' id="search-form"
+    placeholder="Search Collection Title" aria-label="Search collection Title" aria-describedby="button-addon2">
+  <div class="input-group-append">
+    <a href="/home-2/{{shop}}?search={% if search %}{{search}}{% endif %}" class="btn btn-primary"
+      type="button" id="search-button">Search</a>
+  </div>
+</div>
+
+{% if not error %}
+{% if collections['data'] is not none %}
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Collection</th>
+      {% if rules %}<th scope="col">Smart Rules</th>{% endif %}
+      <th scope="col">Sort Method</th>
+      <th scope="col">Merchandise Collection</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for collection in collections['data']['collections']['edges'] %}
+    <tr>
+      <th>
+        {% if collection['node']['image'] %}<img src="{{collection['node']['image']['transformedSrc']}}" alt="{{ collection['node']['title'] }}" class="img-collection">{% endif %}
+        <span class="flex-fill">{{ collection['node']['title'] }}</span>
+      </th>
+      {% if rules %}
+      <td>
+        <div class="flex flex-wrap rules-container">
+
+          {% if rules %}
+          {% for rule in rules['store']['rules2'] %}
+
+          {% if (rule['ExcludeInclude'] == 'exclude' and collection['node']['id'] not in rule['Collections']) or (rule['ExcludeInclude'] == 'include' and collection['node']['id'] in rule['Collections'])  %}
+          {% if rule['Rule'] == 'outOfStock' %}
+          <span data-toggle="tooltip" data-placement="top" title="Smart rules auto-apply sort methods. Out of Stock sends products with inventory below or equal to 0 to the bottom of their collections" class="badge badge-primary mr-1">Out of Stock</span>
+          {% elif rule['Rule'] == 'customInventoryRule' %}
+          <span data-toggle="tooltip" data-placement="top" title="Smart rules auto-apply sort methods. Inventory Level sends product to the top/bottom of their collection based on inventory levels" class="badge badge-primary mr-1">Inventory Level</span>
+          {% elif rule['Rule'] == 'createdDateRule' %}
+          <span data-toggle="tooltip" data-placement="top" title="Smart rules auto-apply sort methods. Created Date sends products to the top/bottom of their collection based on thier created date" class="badge badge-primary mr-1">Created Date</span>
+          {% endif %}
+          {% endif %}
+
+          {% endfor %}
+
+          <span id="rules-warning-{{ collection['node']['id'] | replace('gid://shopify/Collection/', '') }}" data-toggle="tooltip" data-placement="top" title="Auto sort rules will not run on this collection as its sort method is not set to manual. Ignore this warning if you don't want this collection to be auto-sorted." class="badge badge-pill badge-warning rules-warning {% if collection['node']['sortOrder'] == 'MANUAL' %}d-none{% endif %}"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>Collection Not Manual</span>
+
+          {% endif %}
+          
+        </div>
+      </td>
+      {% endif %}
+      <td>
+        <div class="input-group sort-selector">
+          <select class="custom-select sort-select" data-collection="{{ collection['node']['id'] }}"
+            aria-label="Update sort method">
+            <option disabled value="">Sort Method</option>
+            <option {% if collection['node']['sortOrder'] == 'MANUAL' %}selected{% endif %} value="MANUAL">Set manually
+            </option>
+            <option {% if collection['node']['sortOrder'] == 'PRICE_DESC' %}selected{% endif %} value="PRICE_DESC">By price,
+              highest - lowest</option>
+            <option {% if collection['node']['sortOrder'] == 'PRICE_ASC' %}selected{% endif %} value="PRICE_ASC">By price,
+              lowest - highest</option>
+            <option {% if collection['node']['sortOrder'] == 'ALPHA_DESC' %}selected{% endif %} value="ALPHA_DESC">
+              Alphabetically, Z - A</option>
+            <option {% if collection['node']['sortOrder'] == 'ALPHA_ASC' %}selected{% endif %} value="ALPHA_ASC">
+              Alphabetically, A - Z</option>
+            <option {% if collection['node']['sortOrder'] == 'BEST_SELLING' %}selected{% endif %} value="BEST_SELLING">By
+              best-selling products</option>
+            <option {% if collection['node']['sortOrder'] == 'CREATED_DESC' %}selected{% endif %} value="CREATED_DESC">By
+              date created, newest - oldest</option>
+            <option {% if collection['node']['sortOrder'] == 'CREATED' %}selected{% endif %} value="CREATED">By date
+              created, oldest - newest</option>
+          </select>
+        </div>
+      </td>
+      <td>
+        {% if collection['node']['sortOrder'] == 'MANUAL' %}
+        <p data-toggle="tooltip" data-placement="top" title="A host of features for lightening fast sorting"
+          class="ml-1 collection-link btn btn-primary"
+          data-collection="{{collection['node']['id'] | replace('gid://shopify/Collection/', '')}}">Sort</p>
+        <p data-toggle="tooltip" data-placement="top" title="Add variant information but reduced sorting speed"
+          class="ml-1 collection-link btn btn-primary collection-link-variant"
+          data-collection="{{collection['node']['id'] | replace('gid://shopify/Collection/', '')}}">Sort (with
+          Variants)</p>
+        {% else %}
+        <p data-toggle="tooltip" data-placement="top" title="Only manually sorted collections can be sorted"
+          class="ml-1 collection-link btn btn-primary disabled"
+          data-collection="{{collection['node']['id'] | replace('gid://shopify/Collection/', '')}}">Sort</p>
+        <p data-toggle="tooltip" data-placement="top" title="Only manually sorted collections can be sorted"
+          class="ml-1 collection-link btn btn-primary collection-link-variant disabled"
+          data-collection="{{collection['node']['id'] | replace('gid://shopify/Collection/', '')}}">Sort (with
+          Variants)</p>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<nav class="mt-2">
+  <ul class="pagination">
+    {% if collections['data']['collections']['pageInfo']['hasPreviousPage'] %}
+    <li class="page-item"><a class="page-link" id="page-next"
+        href="/home-2/{{shop}}?direction=prev&cursor={{collections['data']['collections']['edges'][0]['cursor']}}&search={% if search %}{{search}}{% endif %}">Previous</a>
+    </li>
+    {% endif %}
+    {% if collections['data']['collections']['pageInfo']['hasNextPage'] %}
+    <li class="page-item"><a class="page-link" id="page-prev"
+        href="/home-2/{{shop}}?direction=next&cursor={{collections['data']['collections']['edges'][collections['data']['collections']['edges']|length - 1]['cursor']}}&search={% if search %}{{search}}{% endif %}">Next</a>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+
+<script>
+  var csrf_token = "{{ csrf_token() }}";
+</script>
+
+<div id="collection-update-toast" class="toast">
+  <div class="toast-header">
+    <strong class="mr-auto">Sort Update</strong>
+    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="toast-body">
+    
+  </div>
+</div>
+
+
+{% endif %}
+{% endif %}
+
+{% endblock %}

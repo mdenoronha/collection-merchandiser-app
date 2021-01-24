@@ -194,6 +194,9 @@ def connect():
             index_response = make_response(redirect('home/{0}'.format(request.args.get("shop").replace('.myshopify.com', ''))))
             index_response.headers.add('Set-Cookie','shop={0}; SameSite=None; Secure'.format(request.args.get("shop")))
             index_response.headers.add('Set-Cookie','access_token={0}; SameSite=None; Secure'.format(resp_json.get("access_token")))
+            print('access')
+            print(resp_json.get("access_token"))
+
 
             return index_response
         else:
@@ -281,9 +284,9 @@ def index2(shop=None):
     if 'myshopify.com' not in shop:
       shop = '{0}.myshopify.com'.format(shop)
   access_token = request.cookies.get("access_token")
-  
+  print(access_token)
   if access_token == None:
-    render_template("install.html", shop=shop)
+    return redirect(url_for('install', shop=shop))
 
   error = False
   cursor = request.args.get('cursor')

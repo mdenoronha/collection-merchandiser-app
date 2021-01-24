@@ -269,7 +269,7 @@ def index(shop=None):
   else:
       shop = '{0}.myshopify.com'.format(shop)
 
-  resp = make_response(render_template('index.html', shop=shop))
+  resp = make_response(render_template('index.html', request=request))
 
   return resp
 

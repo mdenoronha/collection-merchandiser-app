@@ -37,12 +37,18 @@ collectionUtils = {
 							document.querySelector('#sort-all-time')[0].remove();
 						}
 					}
-					if(productsCount > 500) {
+					if (productsCount > 5000) {
+						let largeCollectionMessage = document.querySelector('#x-large-collection-error');
+						if(largeCollectionMessage) {
+							document.querySelector('#x-large-collection-error').classList.remove('hide');
+						}
+					} else if (productsCount > 500) {
 						let largeCollectionMessage = document.querySelector('#large-collection-error');
 						if(largeCollectionMessage) {
 							document.querySelector('#large-collection-error').classList.remove('hide');
 						}
 					}
+
 				} catch(e) {
 					throw e;
 					collectionUtils.showMessage('Error', 'Unexpected error. Please try again');

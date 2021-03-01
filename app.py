@@ -482,7 +482,9 @@ def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0,
             # Waits and reruns function if throttled 
             if error == 'Throttled' and rerun_count < 10:
                 required_time = findWaitTime(collection_data['extensions'])
+                print('start', required_time)
                 time.sleep(required_time)
+                print('end', required_time)
                 return productsQuery(shop, access_token, collection_id, cursor, rerun_count+1, withVariants)
 
     try:

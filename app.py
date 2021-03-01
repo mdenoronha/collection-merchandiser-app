@@ -474,9 +474,9 @@ def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0,
       return False
 
     js_collection_data = collection_data
-    print(collection_data)
 
     if 'errors' in collection_data:
+        print(collection_data)  
         if len(collection_data['errors']) > 0:
             error = collection_data['errors'][0]['message']
             # Waits and reruns function if throttled 
@@ -554,7 +554,7 @@ def findWaitTime(extensions):
     if 0 > required_time: 
         required_time = 0
 
-    return True
+    return required_time
 
 # Auto sort
 @app.route('/auto-smart', methods=['GET', 'POST'])

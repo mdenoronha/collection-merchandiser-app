@@ -474,6 +474,7 @@ def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0,
       return False
 
     js_collection_data = collection_data
+    print(collection_data)
 
     if 'errors' in collection_data:
         if len(collection_data['errors']) > 0:

@@ -282,7 +282,8 @@ def index2(shop=None):
       shop = '{0}.myshopify.com'.format(shop)
   access_token = request.cookies.get("access_token")
   if access_token == None:
-    return render_template('index_2.html', shop=shop, collections=None, error=False, search=None, rules=None)
+    print(shop, 'No index access token')
+    return render_template('index_2.html', shop=shop, collections=None, error=True, search=None, rules=None)
 
   error = False
   cursor = request.args.get('cursor')
@@ -290,6 +291,7 @@ def index2(shop=None):
   searchPar = request.args.get('search')
   search = '' if searchPar == None or searchPar == ''  else 'title:*' + searchPar + '*'
   collections = graphql.queryCollections(shop, access_token, search, cursor, direction)
+
   if collections == None:
     error = True
   else:

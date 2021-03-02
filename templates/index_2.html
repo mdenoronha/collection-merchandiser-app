@@ -9,6 +9,12 @@
   First time here? Go to <span id="instructions-alert-redirect">Instructions</span> for help on getting started.
 </div>
 
+{% if error == True %}
+<div id="instructions-alert" class="alert alert-danger alert-instructions" role="alert">
+  There has been an error loading collections. If this persists, please contact support.
+</div>
+{% endif %}
+
 <div class="input-group mb-3">
   <input type="text" class="form-control" value='{% if search %}{{search}}{% endif %}' id="search-form"
     placeholder="Search Collection Title" aria-label="Search collection Title" aria-describedby="button-addon2">

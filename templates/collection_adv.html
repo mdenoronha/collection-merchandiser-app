@@ -220,6 +220,7 @@
 		const csrfToken = '{{csrf_token() }}';
 		const displayOptions = ['title', 'productPrice', 'availability', 'daysCreated', 'totalInventory', 'unavailable', 'productVariants'];
 		var loadRemaining = {% if not next_page %}false{% else %}true{% endif %};
+		var shop = '{{shop}}';
 	</script>
 
 {% endblock %}

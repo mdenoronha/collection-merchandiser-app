@@ -113,15 +113,22 @@ def extract_next_link(link):
     return link, next_active
 
 def getShop(request):
-
+  
   shop = request.cookies.get("shop") if request.cookies.get("shop") != None else request.args.get("shop")
+  if not shop:
+    try:
+      response = request.get_json()
+      if 'shop' in response:
+        shop = response['shop']
+    except:
+      print('Shop not found')
 
   return shop
 
 # Get items from specified apiSource
-def returnFromCollection(collection_id, apiSource):
+def returnFromCollection(collection_id, apiSource, shop):
     headers = {
-        "X-Shopify-Access-Token": request.cookies.get("access_token"),
+        "X-Shopify-Access-Token": getAccess(shop),
         "Content-Type": "application/json"
     }
 
@@ -141,6 +148,24 @@ def returnFromCollection(collection_id, apiSource):
     else: 
         return False
 
+def getAccess(shop):
+
+  if shop:
+    stores = mongo.db.ac_stores
+    access = stores.find_one({'store': shop})
+    print(access)
+    if access:
+      if 'access' in access:
+        return access['access']
+  
+  return False
+
+def setAccess(shop, access):
+
+  stores = mongo.db.ac_stores
+  stores.find_one_and_update({'store': shop},  { '$set': { "access" : access} }, upsert=True)
+
+  return True
 
 @app.route('/error', methods=['GET'])
 def error():
@@ -191,9 +216,12 @@ def connect():
         if 200 == resp.status_code:
             resp_json = json.loads(resp.text)
 
-            index_response = make_response(redirect('home/{0}'.format(request.args.get("shop").replace('.myshopify.com', ''))))
+            index_response = make_response(redirect('home/{0}/{1}'.format(request.args.get("shop").replace('.myshopify.com', ''), resp_json.get("access_token"))))
             index_response.headers.add('Set-Cookie','shop={0}; SameSite=None; Secure'.format(request.args.get("shop")))
             index_response.headers.add('Set-Cookie','access_token={0}; SameSite=None; Secure'.format(resp_json.get("access_token")))
+            
+            print('Setting access')
+            setAccess(request.args.get("shop"), resp_json.get("access_token"))
 
             return index_response
         else:
@@ -257,9 +285,10 @@ def product_create_sort():
 
 
 # Homepage
-@app.route('/home-2')
-@app.route('/home-2/<shop>')
-def index(shop=None):
+@app.route('/home-old')
+@app.route('/home-old/<shop>')
+@app.route('/home-old/<shop>/<access>')
+def index(shop=None, access=None):
 
   if not shop:
       shop = request.args.get("shop")
@@ -270,27 +299,36 @@ def index(shop=None):
 
   return resp
 
+
 # Homepage
 @app.route('/home')
 @app.route('/home/<shop>')
-def index2(shop=None):
+@app.route('/home/<shop>/<access_token>')
+def index2(shop=None, access_token=None):
 
   if not shop:
       shop = request.args.get("shop")
   else:
     if 'myshopify.com' not in shop:
       shop = '{0}.myshopify.com'.format(shop)
-  access_token = request.cookies.get("access_token")
-  if access_token == None:
-    print(shop, 'No index access token')
-    return render_template('index_2.html', shop=shop, collections=None, error=True, search=None, rules=None)
+
+  if not access_token:
+    access_token = getAccess(shop)
+  print(access_token)
+
+  if access_token == None or access_token == False:
+    return redirect('install')
 
   error = False
   cursor = request.args.get('cursor')
   direction = request.args.get('direction')
   searchPar = request.args.get('search')
   search = '' if searchPar == None or searchPar == ''  else 'title:*' + searchPar + '*'
-  collections = graphql.queryCollections(shop, access_token, search, cursor, direction)
+  collections = None
+  try:
+    collections = graphql.queryCollections(shop, access_token, search, cursor, direction)
+  except:
+    return render_template('install.html', shop=shop)
 
   if collections == None:
     error = True
@@ -306,7 +344,6 @@ def index2(shop=None):
 
   return resp
 
-
 # Update collection sort order
 @csrf.exempt
 @app.route('/update-sort', methods=['POST'])
@@ -316,7 +353,9 @@ def updateSort():
   store = getShop(request)
   collection = response['collection']
   sortOrder = response['sortMethod']
-  access_token = request.cookies.get("access_token")
+  access_token = getAccess(store)
+
+  print(access_token, store)
 
   result = graphql.updateCollection(store, access_token, collection, sortOrder)
   return json.dumps({'status': result}), 200, {'ContentType':'application/json'} 
@@ -326,7 +365,8 @@ def updateSort():
 def collectionNew(collection_id):
 
     # from queue_work import testQueue
-    collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, None, 0, True)
+    shop = getShop(request)
+    collection_data = productsQuery(getShop(request), getAccess(shop), collection_id, None, 0, False)
     if collection_data == False:
       return render_template('collection.html', 
         failed='true',
@@ -358,7 +398,8 @@ def collectionNew(collection_id):
 def collectionAdv(collection_id):
     
   # from queue_work import testQueue
-  collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, None, 0, False)
+  shop = getShop(request)
+  collection_data = productsQuery(getShop(request), getAccess(shop), collection_id, None, 0, True)
   if collection_data == False:
     return render_template('collection_adv.html', 
       failed='true',
@@ -385,6 +426,7 @@ def collectionAdv(collection_id):
       shop=getShop(request)
   )
 
+
 # Collection page ajax
 @app.route('/collection-new-load', methods=['GET', 'POST'])
 def collectionNewLoad():
@@ -393,16 +435,19 @@ def collectionNewLoad():
     collection_id = request.args.get('collectionId', '')
     limited = request.args.get('limited', '')
     all_products = []
+
+    print('************', getShop(request))
     
-    for i in range(10):
-        print(cursor)
-        collection_data = productsQuery(getShop(request), request.cookies.get("access_token"), collection_id, cursor, 0, limited)
-        if collection_data == False:
-          return False
-        all_products = all_products + collection_data['js_collection_data']['data']['collection']['products']['edges']
-        if collection_data['next_page'] == False or collection_data['error'] != None: 
-            break
-        cursor = collection_data['cursor']
+    # for i in range(10):
+    print(cursor)
+    shop = getShop(request)
+    collection_data = productsQuery(getShop(request), getAccess(shop), collection_id, cursor, 0, limited)
+    if collection_data == False:
+      return False
+    all_products = all_products + collection_data['js_collection_data']['data']['collection']['products']['edges']
+    # if collection_data['next_page'] == False or collection_data['error'] != None: 
+    #     break
+    cursor = collection_data['cursor']
 
     collection_data['js_collection_data'] = (json.dumps(all_products)
         .replace(u'<', u'\\u003c')
@@ -416,12 +461,11 @@ def collectionNewLoad():
 @app.route('/product-remove', methods=['GET', 'POST'])
 def productRemove():
 
-    print('Remove print check')
     json_data = json.loads(request.data)
     collection_id = json_data.get('collectionId')
     product_id = json_data.get('productId')
     shop = getShop(request)
-    access_token = request.cookies.get("access_token")
+    access_token = getAccess(shop)
 
     remove_product = graphql.removeProducts(shop, access_token, collection_id, product_id)
 
@@ -436,7 +480,9 @@ def collectionNewSave():
     changes = json_data.get('changes')
     collection_id = json_data.get('collectionId')
     shop = getShop(request)
-    access_token = request.cookies.get("access_token")
+    access_token = getAccess(shop)
+
+    print(changes)
 
     # TODO: Change to queue
     reorder_data = reorderQuery(shop, access_token, collection_id, changes)
@@ -464,7 +510,7 @@ def reorderQuery(shop, access_token, collection_id, changes, rerun_count=0):
     }
 
 def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0, withVariants=False):
-
+    print(withVariants)
     error = ''
     next_page = False
     try:
@@ -478,15 +524,12 @@ def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0,
     js_collection_data = collection_data
 
     if 'errors' in collection_data:
-        print(collection_data)  
         if len(collection_data['errors']) > 0:
             error = collection_data['errors'][0]['message']
             # Waits and reruns function if throttled 
             if error == 'Throttled' and rerun_count < 10:
                 required_time = findWaitTime(collection_data['extensions'])
-                print('start', required_time)
                 time.sleep(required_time)
-                print('end', required_time)
                 return productsQuery(shop, access_token, collection_id, cursor, rerun_count+1, withVariants)
 
     try:
@@ -556,46 +599,57 @@ def findWaitTime(extensions):
     if 0 > required_time: 
         required_time = 0
 
-    return required_time
+    return True
 
 # Auto sort
 @app.route('/auto-smart', methods=['GET', 'POST'])
 def autoSmart():
 
   shop = getShop(request)
-  access_token = request.cookies.get("access_token")
+  access_token = getAccess(shop)
   stores = mongo.db.local_stores
   rules = stores.find_one({'store.name': shop})
-  if rules:
-    oos = rules['store']['rules']['outOfStock'] if 'outOfStock' in rules['store']['rules'] else []
-    inventory = rules['store']['rules']['customInventory'] if 'customInventory' in rules['store']['rules'] else []
-    date = rules['store']['rules']['createdDate'] if 'createdDate' in rules['store']['rules'] else []
 
-  return render_template('auto_smart.html', shop=shop, access_token=access_token, oos=oos if oos else [], inventory=inventory if inventory else [], date=date if date else [])
+  ruleNum = {
+    'outOfStock': 0,
+    'customInventoryRule': 0,
+    'createdDateRule': 0
+  }
+
+  if rules != None:
+    for rule in rules['store']['rules2']:
+      ruleNum[rule['Rule']] = ruleNum[rule['Rule']] + 1
+
+  return render_template('auto_smart.html', shop=shop, access_token=access_token, rules=rules, ruleNum=ruleNum)
 
 @csrf.exempt
 @app.route('/post-auto-smart', methods=['POST'])
 def postAutoSmart():
 
     response = request.get_json()
+    shop = getShop(request)
+    access_token = getAccess(shop)
     # Set up Mongo
     
     stores = mongo.db.local_stores
-       
-    store = stores.find_one({'local_stores.name': response['shop']})
-    if store != None:
-      if response['access'] != store['store']['access_token']:
-        return json.dumps({'status': 'Authentication Failed'}), 500, {'ContentType':'application/json'} 
+    if len(response['rules']) < 8: 
+      store = stores.find_one({'local_stores.name': shop})
+      if store != None:
+        if response['access'] != store['store']['access_token']:
+          return json.dumps({'status': 'Authentication Failed'}), 500, {'ContentType':'application/json'} 
 
-    try:
-      stores.find_one_and_update({'store.name': response['shop']}, {
-          '$set': {'store.access_token': response['access'], 'store.rules': response['rules']},
-      }, upsert=True)
-      return json.dumps({'status': 'Automations Updated Successfully'}), 200, {'ContentType':'application/json'} 
-    except (e):
-      return json.dumps({'status': 'Something Went Wrong, Please Try Again'}), 500, {'ContentType':'application/json'} 
+      try:
+        stores.find_one_and_update({'store.name': shop}, {
+            '$set': {'store.access_token': access_token, 'store.rules2': response['rules']},
+        }, upsert=True)
+        return json.dumps({'status': 'Automations Updated Successfully'}), 200, {'ContentType':'application/json'} 
+      except e:
+        return json.dumps({'status': 'Something Went Wrong, Please Try Again'}), 500, {'ContentType':'application/json'} 
 
-    return json.dumps({'status': 'Something Went Wrong, Please Try Again'}), 500, {'ContentType':'application/json'} 
+      return json.dumps({'status': 'Something Went Wrong, Please Try Again'}), 500, {'ContentType':'application/json'}
+    else:
+      return json.dumps({'status': 'Something Went Wrong, Please Refresh Try Again'}), 500, {'ContentType':'application/json'} 
+
 
 # Auto sort functions
 def autoBasicRules():
@@ -687,7 +741,6 @@ def checkRule(product, rule):
 
   return ruleBreak
 
-
 if __name__ == "__main__":
-    app.run(host=os.environ.get("IP"), port=int(os.environ.get("PORT")), debug=False)
+    app.run(host=os.environ.get("IP"), port=int(os.environ.get("PORT")), debug=True)
 

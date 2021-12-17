@@ -319,7 +319,8 @@ scripts = {
 						contentType: "application/json",
 						data: JSON.stringify({
 							'collection': collectionId,
-							'sortMethod': sortMethod
+							'sortMethod': sortMethod,
+							'shop': shop
 						}),
 						success: function (result) {
 							try {

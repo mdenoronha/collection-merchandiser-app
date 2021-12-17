@@ -159,6 +159,7 @@ collectionUtils = {
     	  data: JSON.stringify({ 
     	  	'changes' : positionChanges,
     	    'collectionId': collectionId,
+			'shop': shop
     	   }),
     	})
     	.done(function(res) {
@@ -202,6 +203,7 @@ collectionUtils = {
 			data: JSON.stringify({
 				'productId': productId,
 				'collectionId': collectionId, 
+				'shop': shop
 			})
 		})
 		.done(function(res) {
@@ -377,7 +379,8 @@ collectionUtils = {
 			  	'limited': limited,
 			  	'cursor' : cursor,
 			    'csrfmiddlewaretoken': csrfToken,
-			    'collectionId': collectionId
+			    'collectionId': collectionId,
+				'shop': shop
 			   },
 			})
 			.done(function(res) {

@@ -206,9 +206,9 @@ scripts = {
 		$('.collection-link').on('click', function() {
 		  if(!$(this).hasClass('disabled')) {
 		  	if($(this).hasClass('collection-link-variant')) {
-		    	redirect.dispatch(Redirect.Action.APP, '/collection-adv/' + $(this).data('collection'));
-		  	} else {
 		    	redirect.dispatch(Redirect.Action.APP, '/collection-new/' + $(this).data('collection'));
+		  	} else {
+		    	redirect.dispatch(Redirect.Action.APP, '/collection-adv/' + $(this).data('collection'));
 		  	}
 		  }
 		})
@@ -265,9 +265,9 @@ scripts = {
 		$('.collection-link').on('click', function () {
 			if (!$(this).hasClass('disabled')) {
 				if ($(this).hasClass('collection-link-variant')) {
-					redirect.dispatch(Redirect.Action.APP, '/collection-adv/' + $(this).data('collection'));
-				} else {
 					redirect.dispatch(Redirect.Action.APP, '/collection-new/' + $(this).data('collection'));
+				} else {
+					redirect.dispatch(Redirect.Action.APP, '/collection-adv/' + $(this).data('collection'));
 				}
 			}
 		})

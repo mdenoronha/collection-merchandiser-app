@@ -97,18 +97,18 @@
       <td>
         {% if collection['node']['sortOrder'] == 'MANUAL' %}
         <p data-toggle="tooltip" data-placement="top" title="A host of features for lightening fast sorting"
-          class="ml-1 collection-link btn btn-primary"
+          class="ml-1 collection-link btn btn-primary collection-link-variant"
           data-collection="{{collection['node']['id'] | replace('gid://shopify/Collection/', '')}}">Sort</p>
         <p data-toggle="tooltip" data-placement="top" title="Add variant information but reduced sorting speed"
-          class="ml-1 collection-link btn btn-primary collection-link-variant"
+          class="ml-1 collection-link btn btn-primary"
           data-collection="{{collection['node']['id'] | replace('gid://shopify/Collection/', '')}}">Sort (with
           Variants)</p>
         {% else %}
         <p data-toggle="tooltip" data-placement="top" title="Only manually sorted collections can be sorted"
-          class="ml-1 collection-link btn btn-primary disabled"
+          class="ml-1 collection-link btn btn-primary collection-link-variant disabled"
           data-collection="{{collection['node']['id'] | replace('gid://shopify/Collection/', '')}}">Sort</p>
         <p data-toggle="tooltip" data-placement="top" title="Only manually sorted collections can be sorted"
-          class="ml-1 collection-link btn btn-primary collection-link-variant disabled"
+          class="ml-1 collection-link btn btn-primary disabled"
           data-collection="{{collection['node']['id'] | replace('gid://shopify/Collection/', '')}}">Sort (with
           Variants)</p>
         {% endif %}

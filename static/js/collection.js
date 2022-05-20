@@ -634,10 +634,10 @@ class Product {
 		this.createdDate = product.createdAt;
 		if(product.variants) { this.variants = product.variants.edges };
 		this.id = product.id;
-	  this.prices = this.variants ? this.variants.reduce((res, obj) => {
-		  return (obj.node.price < res.node.price) ? obj : res;
-	  }) : null;
-	  this.priceDiff = this.variants ? this.prices.node.compareAtPrice ? (this.prices.node.compareAtPrice-this.prices.node.price)/this.prices.node.price*100 : null : null;
+		this.prices = this.variants ? this.variants.reduce((res, obj) => {
+			return (obj.node.price < res.node.price) ? obj : res;
+		}) : null;
+	  	this.priceDiff = this.variants ? this.prices.node.compareAtPrice ? (this.prices.node.compareAtPrice-this.prices.node.price)/this.prices.node.price*100 : null : null;
 		window['productCount'] = window['productCount'] || 0;
 	}
   
@@ -667,13 +667,14 @@ class Product {
 		let cardBody = '<div class="card-body">'
 		let cardTitle = this.title ? `<p class="products__title">${this.title}</p>` : `<p class="products__title">Title Not Found</p>`;
 	  	let priceToggle = 'data-toggle="tooltip" data-placement="top" title="" data-original-title="The lowest price for this product"'
+		  let cardPrice;
 		if(this.prices) {
 			let cheapest =  this.prices;
 			let price = this.currency && cheapest ? collectionUtils.formatPrice(this.currency, cheapest.node.price) : null;
 			let comparePrice = this.currency && cheapest ? cheapest.node.compareAtPrice ? collectionUtils.formatPrice(this.currency, cheapest.node.compareAtPrice) : null : null;
-			let cardPrice = price ? comparePrice ? `<p ${priceToggle} class="products__productPrice"><s class="products__productPrice">${comparePrice}</s> ${price}</p>` : `<p ${priceToggle} class="products__productPrice">${price}</p>` : '';
+			cardPrice = price ? comparePrice ? `<p ${priceToggle} class="products__productPrice"><s class="products__productPrice">${comparePrice}</s> ${price}</p>` : `<p ${priceToggle} class="products__productPrice">${price}</p>` : '';
 		} else {
-			let cardPrice = price ? `<p class="products__productPrice">${price}</p>` : ''
+			cardPrice = price ? `<p class="products__productPrice">${price}</p>` : ''
 		}
 		return cardBody + cardTitle + cardPrice
 	}

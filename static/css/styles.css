@@ -368,3 +368,19 @@ input:checked + .slider:before {
 	width: 30px;
     border-radius: 100%;
 }
+
+.list-group-variants {
+	font-size: 0.6rem;
+    padding: 3px 10px;
+}
+
+.card-price-diff {
+	position: absolute;
+    right: 0;
+    top: 40px;
+    background-color: black;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 10px 0 0 10px;
+    font-size: 0.7rem;
+}

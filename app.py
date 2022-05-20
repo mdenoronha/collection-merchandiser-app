@@ -510,7 +510,54 @@ def reorderQuery(shop, access_token, collection_id, changes, rerun_count=0):
     }
 
 def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0, withVariants=False):
-    print(withVariants)
+  data = productsQueryWork(shop, access_token, collection_id, cursor, rerun_count, withVariants)
+  print(data)
+  # Get missed variants
+  if withVariants:
+    for product in data['js_collection_data']['data']['collection']['products']['edges']:
+      if product['node']['variants']['pageInfo']['hasNextPage']:
+        try:
+            last_variant = product['node']['variants']['edges'][len(product['node']['variants']['edges']) - 1]
+            cursor = last_variant['cursor']
+        except:
+            print('Error getting variants cursor')
+        variants = variantsQueryWork(shop, access_token, product['node']['id'], cursor, 0, [])
+        product['node']['variants']['edges'].extend(variants)
+        print(variants)
+
+  return data
+
+def variantsQueryWork(shop, access_token, product_id, cursor, rerun_count=0, variants=[]):
+  error = ''
+  next_page = False
+  try:
+    product_data = graphql.queryVariants(shop, access_token, product_id, cursor)
+  except Exception as e:
+    print('401 Error Print')
+    print(e)
+    print(shop)
+    return False
+
+  if 'errors' in product_data:
+    if len(product_data['errors']) > 0:
+        error = product_data['errors'][0]['message']
+        # Waits and reruns function if throttled 
+        if error == 'Throttled' and rerun_count < 10:
+            required_time = findWaitTime(product_data['extensions'])
+            time.sleep(required_time)
+            return variantsQueryWorks(shop, access_token, product_id, cursor, rerun_count+1)
+
+  variants.extend(product_data['data']['product']['variants']['edges'])
+
+  next_page = product_data['data']['product']['variants']['pageInfo']['hasNextPage']
+  if next_page:
+    last_variant = product_data['data']['product']['variants']['edges'][len(product_data['data']['product']['variants']['edges']) - 1]
+    cursor = last_variant['cursor']
+    variants = variantsQueryWork(shop, access_token, product_id, cursor, 0, variants)
+
+  return variants
+
+def productsQueryWork(shop, access_token, collection_id, cursor=None, rerun_count=0, withVariants=False):
     error = ''
     next_page = False
     try:
@@ -530,7 +577,7 @@ def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0,
             if error == 'Throttled' and rerun_count < 10:
                 required_time = findWaitTime(collection_data['extensions'])
                 time.sleep(required_time)
-                return productsQuery(shop, access_token, collection_id, cursor, rerun_count+1, withVariants)
+                return productsQueryWork(shop, access_token, collection_id, cursor, rerun_count+1, withVariants)
 
     try:
         last_product = collection_data['data']['collection']['products']['edges'][len(collection_data['data']['collection']['products']['edges']) - 1]
@@ -545,6 +592,7 @@ def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0,
         'cursor': cursor,
         'next_page': next_page
     }
+
 
 def productsCollectionsQuery(shop, access_token, product_id, collections_skip_list, cursor=None, rerun_count=0):
 

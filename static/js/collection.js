@@ -599,70 +599,97 @@ class sortHelper {
 		collectionUtils.initLoading('stop')
 		// TODO: Add completed message
 	}
+
+	randomSort() {
+		if(loadRemaining) {
+			collectionUtils.loadAll(this.randomSortWork);
+		} else {
+			this.randomSortWork();
+		}
+	}
+
+	randomSortWork() {
+		let currentOrder = window.sortable.toArray().slice(0);
+		for (let i = currentOrder.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[currentOrder[i], currentOrder[j]] = [currentOrder[j], currentOrder[i]];
+		}
+		window.sortable.sort(currentOrder);
+		collectionUtils.initLoading('stop');
+	}
 }
 
 // Collection page product builder
 class Product {
-  constructor(product) {
-  	this.title = product.title;
-  	// TODO: Add placeholder image
-  	this.featuredImage = product.featuredImage ? product.featuredImage.transformedSrc : '';
-  	this.totalInventory = product.totalInventory;
-  	this.tracksInventory = product.tracksInventory;
-  	// this.variants = product.variants ? product.variants.edges : null;
-  	this.minPrice = product.priceRange.minVariantPrice.amount;
-  	this.currency = product.priceRange.minVariantPrice.currencyCode;
-  	this.storeUrl = product.onlineStoreUrl;
-  	this.createdDate = product.createdAt;
-  	if(product.variants) { this.variants = product.variants.edges };
-  	this.id = product.id;
-  	window['productCount'] = window['productCount'] || 0;
-  }
-
-  get element() {
-  	return this.createElement();
-  }
-
-  createHeader() {
-  	let cardImage = this.featuredImage ? `<img src="${this.featuredImage}" class="card-img-top">` : '';
-  	let cardHeader;
-  	let cardTop = `
-	  				<div data-product-id="${this.id}" data-positon="${window['productCount']}" class="products__card ${this.storeUrl ? '' : 'products__unavailable'}" style="width: ${window['rows'] || '20%'};">
-	  					<div class="card">
-	  					<a data-toggle="tooltip" data-placement="bottom" title="View product in new tab" class="view-product-icon fa fa-eye" target="_blank" href="https://${shop}/admin/products/${this.id.replace('gid://shopify/Product/', '')}"></a>`;
-	let cardRemove = '';
-	if(collectionInfo.data.collection.ruleSet == null) {
-		cardRemove = `<i data-toggle="tooltip" data-placement="bottom" title="Remove product from collection" onclick="collectionUtils.showDeleteModal('${this.title}', '${this.id}')" class="fa fa-times remove-product-icon" aria-hidden="true"></i>`
+	constructor(product) {
+		this.title = product.title;
+		// TODO: Add placeholder image
+		this.featuredImage = product.featuredImage ? product.featuredImage.transformedSrc : '';
+		this.totalInventory = product.totalInventory;
+		this.tracksInventory = product.tracksInventory;
+		// this.variants = product.variants ? product.variants.edges : null;
+		this.minPrice = product.priceRange.minVariantPrice.amount;
+		this.currency = product.priceRange.minVariantPrice.currencyCode;
+		this.storeUrl = product.onlineStoreUrl;
+		this.createdDate = product.createdAt;
+		if(product.variants) { this.variants = product.variants.edges };
+		this.id = product.id;
+	  this.prices = this.variants.reduce((res, obj) => {
+		  return (obj.node.price < res.node.price) ? obj : res;
+	  });
+	  this.priceDiff = this.prices.node.compareAtPrice ? (this.prices.node.compareAtPrice-this.prices.node.price)/this.prices.node.price*100 : null;
+		window['productCount'] = window['productCount'] || 0;
 	}
-
-	window['productCount']++
-	return cardTop + cardRemove + cardImage;
-  }
-
-  createTitle() {
-  	let cardBody = '<div class="card-body">'
-  	let cardTitle = this.title ? `<p class="products__title">${this.title}</p>` : `<p class="products__title">Title Not Found</p>`;
-  	let price = this.currency && this.minPrice ? collectionUtils.formatPrice(this.currency, this.minPrice / 100) : null;
-  	let cardPrice = price ? `<p class="products__productPrice">${price}</p>` : ''
-  	return cardBody + cardTitle + cardPrice
-  }
-
-  createVariants() {
-  	let cardVariants
-  	if(this.variants) {
-  		cardVariants = `<ul class="list-group products__productVariants">`
-  		this.variants.map(x => {
-  			cardVariants = cardVariants + `
-  			<li class="list-group-item d-flex justify-content-between align-items-center">
-  			  ${x.node.title == 'Default Title' ? 'Default' : x.node.title}
-  			  <span class="badge ${x.node.inventoryQuantity < 1 ? 'badge-danger' : x.node.inventoryQuantity < 5 ? 'badge-warning' : 'badge-primary'} badge-pill">${x.node.inventoryQuantity}</span>
-  			</li>
-  			`
-  		})
-  		cardVariants = cardVariants + `</ul>`
-  	}
-  	return cardVariants
-  }
+  
+	get element() {
+		return this.createElement();
+	}
+  
+	createHeader() {
+	  let priceDiff = this.priceDiff ? `<div data-toggle="tooltip" data-placement="top" title="" data-original-title="Price difference (for lowest price variant)" class="card-price-diff">${-this.priceDiff.toFixed(2)}%</div>` : ''
+		let cardImage = this.featuredImage ? `<img src="${this.featuredImage}" class="card-img-top">` : '';
+		let cardHeader;
+		let cardTop = `
+						<div data-product-id="${this.id}" data-positon="${window['productCount']}" class="products__card ${this.storeUrl ? '' : 'products__unavailable'}" style="width: ${window['rows'] || '20%'};">
+							<div class="card">
+							<a data-toggle="tooltip" data-placement="bottom" title="View product in new tab" class="view-product-icon fa fa-eye" target="_blank" href="https://${shop}/admin/products/${this.id.replace('gid://shopify/Product/', '')}"></a>`;
+	  let cardRemove = '';
+	  if(collectionInfo.data.collection.ruleSet == null) {
+		  cardRemove = `<i data-toggle="tooltip" data-placement="bottom" title="Remove product from collection" onclick="collectionUtils.showDeleteModal('${this.title}', '${this.id}')" class="fa fa-times remove-product-icon" aria-hidden="true"></i>`
+	  }
+  
+	  window['productCount']++
+	  return cardTop + cardRemove + cardImage + priceDiff;
+	}
+  
+  
+	createTitle() {
+		let cardBody = '<div class="card-body">'
+		let cardTitle = this.title ? `<p class="products__title">${this.title}</p>` : `<p class="products__title">Title Not Found</p>`;
+	  let priceToggle = 'data-toggle="tooltip" data-placement="top" title="" data-original-title="The lowest price for this product"'
+	  let cheapest =  this.prices;
+		let price = this.currency && cheapest ? collectionUtils.formatPrice(this.currency, cheapest.node.price) : null;
+	  let comparePrice = this.currency && cheapest ? cheapest.node.compareAtPrice ? collectionUtils.formatPrice(this.currency, cheapest.node.compareAtPrice) : null : null;
+		let cardPrice = price ? comparePrice ? `<p ${priceToggle} class="products__productPrice"><s class="products__productPrice">${comparePrice}</s> ${price}</p>` : `<p ${priceToggle} class="products__productPrice">${price}</p>` : '';
+		return cardBody + cardTitle + cardPrice
+	}
+  
+	createVariants() {
+		let cardVariants
+		if(this.variants) {
+			cardVariants = `<ul class="list-group products__productVariants">`
+			this.variants.map(x => {
+				cardVariants = cardVariants + `
+				<li class="list-group-item d-flex justify-content-between align-items-center list-group-variants">
+				  ${x.node.title == 'Default Title' ? 'Default' : x.node.title}
+				  <span class="badge ${x.node.inventoryQuantity < 1 ? 'badge-danger' : x.node.inventoryQuantity < 5 ? 'badge-warning' : 'badge-primary'} badge-pill">${x.node.inventoryQuantity}</span>
+				</li>
+				`
+			})
+			cardVariants = cardVariants + `</ul>`
+		}
+		return cardVariants
+	}
 
   createStandardInfo() {
   	let cardDate = '';

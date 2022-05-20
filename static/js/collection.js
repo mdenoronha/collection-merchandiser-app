@@ -616,6 +616,7 @@ class sortHelper {
 		}
 		window.sortable.sort(currentOrder);
 		collectionUtils.initLoading('stop');
+		save.set({disabled: false});
 	}
 }
 

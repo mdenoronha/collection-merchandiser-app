@@ -64,7 +64,7 @@ def removeProducts(store, access_token, collection_id, product_id):
 	return data
 
 # Used for manual sort page
-def queryProducts(store, access_token, collection_id, cursor=None, limited=False):
+def queryProducts(store, access_token, collection_id, cursor=None, withVariants=False):
 
 	headers = {
         "X-Shopify-Access-Token": access_token,
@@ -73,55 +73,7 @@ def queryProducts(store, access_token, collection_id, cursor=None, limited=False
 
 	client = GraphqlClient(endpoint="https://" + store + "/admin/api/2020-04/graphql.json")
 	
-	if limited == False or limited == 'false':
-		query = """
-	    query MyQuery($collection: ID!, $cursor: String) {
-		  collection(id: $collection) {
-		  	productsCount
-		  	sortOrder
-		  	ruleSet {
-	          rules {
-	            column
-	          }
-	        }
-		    products(first: 30, after: $cursor) {
-		      pageInfo {
-		        hasNextPage
-		        hasPreviousPage
-		      }
-		      edges {
-		        cursor
-		        node {
-		          title
-		          onlineStoreUrl
-		          id
-		          createdAt
-		          priceRange {
-		            minVariantPrice {
-		              amount
-		              currencyCode
-		            }
-		          }
-		          tracksInventory
-		          totalInventory
-		          featuredImage {
-	                transformedSrc(maxHeight: 300)
-	              }
-	              variants(first: 15) {
-			        edges {
-			          node {
-			            title
-			            inventoryQuantity
-			          }
-			        }
-			      }
-		        }
-		      }
-		    }
-		  }
-		}
-		"""
-	else:
+	if withVariants == False or withVariants == 'false':
 		query = """
 	    query MyQuery($collection: ID!, $cursor: String) {
 		  collection(id: $collection) {
@@ -161,13 +113,101 @@ def queryProducts(store, access_token, collection_id, cursor=None, limited=False
 		  }
 		}
 		"""
+	else:
+		query = """
+	    query MyQuery($collection: ID!, $cursor: String) {
+		  collection(id: $collection) {
+		  	productsCount
+		  	sortOrder
+		  	ruleSet {
+	          rules {
+	            column
+	          }
+	        }
+		    products(first: 30, after: $cursor) {
+		      pageInfo {
+		        hasNextPage
+		        hasPreviousPage
+		      }
+		      edges {
+		        cursor
+		        node {
+		          title
+		          onlineStoreUrl
+		          id
+		          createdAt
+		          priceRange {
+		            minVariantPrice {
+		              amount
+		              currencyCode
+		            }
+		          }
+		          tracksInventory
+		          totalInventory
+		          featuredImage {
+	                transformedSrc(maxHeight: 300)
+	              }
+	              variants(first: 14) {
+					pageInfo {
+						hasNextPage
+						hasPreviousPage
+					}
+			        edges {
+					  cursor
+			          node {
+						compareAtPrice
+						price
+			            title
+			            inventoryQuantity
+			          }
+			        }
+			      }
+		        }
+		      }
+		    }
+		  }
+		}
+		"""
 	
-
 	variables = {'collection': 'gid://shopify/Collection/{0}'.format(collection_id), 'cursor': cursor}
 
 	data = client.execute(query=query, headers=headers, variables=variables)
-
 	return data
+
+def queryVariants(store, access_token, product_id, cursor):
+	headers = {
+        "X-Shopify-Access-Token": access_token,
+        "Content-Type": "application/json"
+    }
+
+	client = GraphqlClient(endpoint="https://" + store + "/admin/api/2020-04/graphql.json")
+
+	query = """
+		query GetProductsById($id: ID!, $cursor: String) {
+			product(id: $id) {
+				variants(first: 30, after: $cursor) {
+					pageInfo {
+						hasNextPage
+						hasPreviousPage
+					}
+			        edges {
+					  cursor
+			          node {
+						compareAtPrice
+						price
+			            title
+			            inventoryQuantity
+			          }
+			        }
+			    }
+			}
+		}
+	"""
+
+	variables = {'id': product_id, 'cursor': cursor}
+	data = client.execute(query=query, headers=headers, variables=variables)
+	return data
+
 
 def queryCollectionsOfProducts(store, access_token, product_id, cursor=None):
 

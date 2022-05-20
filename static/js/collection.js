@@ -667,13 +667,14 @@ class Product {
 		let cardBody = '<div class="card-body">'
 		let cardTitle = this.title ? `<p class="products__title">${this.title}</p>` : `<p class="products__title">Title Not Found</p>`;
 	  	let priceToggle = 'data-toggle="tooltip" data-placement="top" title="" data-original-title="The lowest price for this product"'
-		  let cardPrice;
+		let cardPrice;
 		if(this.prices) {
 			let cheapest =  this.prices;
 			let price = this.currency && cheapest ? collectionUtils.formatPrice(this.currency, cheapest.node.price) : null;
 			let comparePrice = this.currency && cheapest ? cheapest.node.compareAtPrice ? collectionUtils.formatPrice(this.currency, cheapest.node.compareAtPrice) : null : null;
 			cardPrice = price ? comparePrice ? `<p ${priceToggle} class="products__productPrice"><s class="products__productPrice">${comparePrice}</s> ${price}</p>` : `<p ${priceToggle} class="products__productPrice">${price}</p>` : '';
 		} else {
+			let price = this.currency && this.minPrice ? collectionUtils.formatPrice(this.currency, this.minPrice / 100) : null;
 			cardPrice = price ? `<p class="products__productPrice">${price}</p>` : ''
 		}
 		return cardBody + cardTitle + cardPrice

@@ -159,6 +159,7 @@ def queryProducts(store, access_token, collection_id, cursor=None, withVariants=
 						price
 			            title
 			            inventoryQuantity
+						sku
 			          }
 			        }
 			      }
@@ -197,6 +198,7 @@ def queryVariants(store, access_token, product_id, cursor):
 						price
 			            title
 			            inventoryQuantity
+						sku
 			          }
 			        }
 			    }

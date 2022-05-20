@@ -688,7 +688,8 @@ class Product {
 			this.variants.map(x => {
 				cardVariants = cardVariants + `
 				<li class="list-group-item d-flex justify-content-between align-items-center list-group-variants">
-				  ${x.node.title == 'Default Title' ? 'Default' : x.node.title}
+				<span>${x.node.title == 'Default Title' ? 'Default' : x.node.title}</span>
+				<span> ${x.node.sku}</span>
 				  <span class="badge ${x.node.inventoryQuantity < 1 ? 'badge-danger' : x.node.inventoryQuantity < 5 ? 'badge-warning' : 'badge-primary'} badge-pill">${x.node.inventoryQuantity}</span>
 				</li>
 				`

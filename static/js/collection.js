@@ -408,6 +408,7 @@ collectionUtils = {
 				}
 			})
 			.fail(function(err) {
+			  console.log(err)
 			  console.log('Error: ' + err);
 			  collectionUtils.initLoading('stop');
 			});

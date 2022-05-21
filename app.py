@@ -441,7 +441,7 @@ def collectionNewLoad():
     # for i in range(10):
     print(cursor)
     shop = getShop(request)
-    collection_data = productsQuery(getShop(request), getAccess(shop), collection_id, cursor, 0, limited)
+    collection_data = productsQuery(getShop(request), getAccess(shop), collection_id, cursor, 0, limited == 'true')
     if collection_data == False:
       return False
     all_products = all_products + collection_data['js_collection_data']['data']['collection']['products']['edges']

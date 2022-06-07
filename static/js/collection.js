@@ -639,7 +639,7 @@ class Product {
 		this.prices = this.variants ? this.variants.reduce((res, obj) => {
 			return (obj.node.price < res.node.price) ? obj : res;
 		}) : null;
-	  	this.priceDiff = this.variants ? this.prices.node.compareAtPrice ? (this.prices.node.compareAtPrice-this.prices.node.price)/this.prices.node.price*100 : null : null;
+	  	this.priceDiff = this.variants ? this.prices.node.compareAtPrice ? (this.prices.node.price/this.prices.node.compareAtPrice)*100 : null : null;
 		window['productCount'] = window['productCount'] || 0;
 	}
   

@@ -8,17 +8,14 @@ import string
 import base64
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
-from flask_mail import Mail, Message
-
 import requests
 import json
 import os
 import validators
 import time
 from datetime import timedelta
-
+from flask_mail import Mail, Message
 import threading
-
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 
@@ -31,32 +28,37 @@ import graphql
 
 
 app = Flask(__name__)
+scheduler = Scheduler(connection=Redis())
+
 app.config['SECRET_KEY'] = os.environ.get("SECRET")
-SECRET = os.environ.get("SHOPIFY_SECRET")
 
-redis_pass = os.environ.get("REDIS_PASS")
-redis_host = os.environ.get("REDIS_HOST")
-redis_port = os.environ.get("REDIS_PORT")
-
-# Flask Mail
-app.config['MAIL_SERVER'] = os.environ.get("MAIL_SERVER")
-app.config['MAIL_PORT'] = os.environ.get("MAIL_PORT")
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME")
-app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
+app.config['MAIL_USERNAME'] = 'collection.merchadiser@gmail.com'
+app.config['MAIL_PASSWORD'] = 'tlcrirsumbykesfy'
 app.config.update(
     SESSION_COOKIE_SECURE=True,
     SESSION_COOKIE_SAMESITE=None,
 )
 
+mail = Mail(app)
+
+SECRET = os.environ.get("SHOPIFY_SECRET")
+
+# For live
+# redis_pass = os.environ.get("REDIS_PASS")
+# redis_host = os.environ.get("REDIS_HOST")
+# redis_port = os.environ.get("REDIS_PORT")
+
 # MongoDB
+# REMOVE ****
 CORS(app)
-app.config["MONGO_URI"] = os.environ.get("MONGO_URL")
+app.config["MONGO_URI"] = "mongodb+srv://admin:YJerxTgp5isweN5z@automation-stores-hmwl5.mongodb.net/test?retryWrites=true&w=majority"
 mongo = PyMongo(app)
 
 csrf = CSRFProtect()
 csrf.init_app(app)
-mail = Mail(app)
 
 nonce = ''
 
@@ -400,10 +402,13 @@ def collectionAdv(collection_id):
   # from queue_work import testQueue
   shop = getShop(request)
   collection_data = productsQuery(getShop(request), getAccess(shop), collection_id, None, 0, True)
+  location_data = graphql.queryLocations(getShop(request), getAccess(shop))
+  print(location_data, 'location_data')
   if collection_data == False:
     return render_template('collection_adv.html', 
       failed='true',
       collection_data='null', 
+      location_data=location_data,
       error=None,
       cursor=None,
       next_page=None,
@@ -419,6 +424,7 @@ def collectionAdv(collection_id):
   return render_template('collection_adv.html', 
       failed='false',
       collection_data=js_collection_data, 
+      location_data=location_data,
       error=collection_data['error'], 
       cursor=collection_data['cursor'], 
       next_page=collection_data['next_page'], 
@@ -439,7 +445,7 @@ def collectionNewLoad():
     print('************', getShop(request))
     
     # for i in range(10):
-    print(cursor)
+    print(limited, 'limited')
     shop = getShop(request)
     collection_data = productsQuery(getShop(request), getAccess(shop), collection_id, cursor, 0, limited == 'true')
     if collection_data == False:
@@ -523,7 +529,6 @@ def productsQuery(shop, access_token, collection_id, cursor=None, rerun_count=0,
             print('Error getting variants cursor')
         variants = variantsQueryWork(shop, access_token, product['node']['id'], cursor, 0, [])
         product['node']['variants']['edges'].extend(variants)
-        print(variants)
 
   return data
 
@@ -545,9 +550,9 @@ def variantsQueryWork(shop, access_token, product_id, cursor, rerun_count=0, var
         if error == 'Throttled' and rerun_count < 10:
             required_time = findWaitTime(product_data['extensions'])
             time.sleep(required_time)
-            return variantsQueryWorks(shop, access_token, product_id, cursor, rerun_count+1)
+            return variantsQueryWork(shop, access_token, product_id, cursor, rerun_count+1)
 
-  variants.extend(product_data['data']['product']['variants']['edges'])
+  variants = variants + product_data['data']['product']['variants']['edges']
 
   next_page = product_data['data']['product']['variants']['pageInfo']['hasNextPage']
   if next_page:
@@ -592,6 +597,7 @@ def productsQueryWork(shop, access_token, collection_id, cursor=None, rerun_coun
         'cursor': cursor,
         'next_page': next_page
     }
+
 
 
 def productsCollectionsQuery(shop, access_token, product_id, collections_skip_list, cursor=None, rerun_count=0):

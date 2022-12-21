@@ -15,10 +15,6 @@
 	<div id="large-collection-error" class="hide alert alert-danger" role="alert">
 	  As this is a large collection, you may experience longer waiting times when loading/sorting products. For a faster experience use <a target="_blank" onclick="redirect.dispatch(Redirect.Action.APP, '/collection-new/{{collection_id}}')">Standard Sorting</a>
 	</div>
-
-	<div id="x-large-collection-error" class="hide alert alert-danger" role="alert">
-		This collection has an extremely large number of products, Quick Sort and loading all products will likely take a considerable amount of time.
-	</div>
 	
 
 	<!-- Display Options -->
@@ -62,6 +58,10 @@
 	      	  <input onchange="collectionUtils.displayButton('unavailable')" type="checkbox" class="custom-control-input" id="unavailable">
 	      	  <label class="custom-control-label" for="unavailable">Hide products unavailable on Online Store</label>
 	      	</div>
+
+			<div id="location-bar" class="mt-2">
+
+			</div>
       </div>
     </div>
 	</div>
@@ -224,10 +224,13 @@
 		const limited = true;
 		const error = "{{error | safe}}";
 		const collectionInfo = {{ collection_data | safe }};
+		const location_data = {{ location_data | safe }};
+		console.log(collectionInfo, location_data)
 		const csrfToken = '{{csrf_token() }}';
 		const displayOptions = ['title', 'productPrice', 'availability', 'daysCreated', 'totalInventory', 'unavailable', 'productVariants'];
 		var loadRemaining = {% if not next_page %}false{% else %}true{% endif %};
-		var shop = '{{shop}}';
+		var shop = '{{shop}}'
+
 	</script>
 
 {% endblock %}

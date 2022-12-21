@@ -1,25 +1,27 @@
 import requests
 from python_graphql_client import GraphqlClient
 
+
 def reorderProducts(store, access_token, collection_id, changes):
 
 	headers = {
-        "X-Shopify-Access-Token": access_token,
-        "Content-Type": "application/json"
-    }
+		"X-Shopify-Access-Token": access_token,
+		"Content-Type": "application/json"
+	}
 
-	client = GraphqlClient(endpoint="https://" + store + "/admin/api/2020-04/graphql.json")
-	
+	client = GraphqlClient(endpoint="https://" + store +
+						   "/admin/api/2020-04/graphql.json")
+
 	query = """
 	mutation collectionReorderProducts($id: ID!, $moves: [MoveInput!]!) {
 	  collectionReorderProducts(id: $id, moves: $moves) {
-	    job {
-	      id
-	    }
-	    userErrors {
-	      field
-	      message
-	    }
+		job {
+		  id
+		}
+		userErrors {
+		  field
+		  message
+		}
 	  }
 	}
 	"""
@@ -32,25 +34,27 @@ def reorderProducts(store, access_token, collection_id, changes):
 
 	return data
 
+
 def removeProducts(store, access_token, collection_id, product_id):
 
 	headers = {
-        "X-Shopify-Access-Token": access_token,
-        "Content-Type": "application/json"
-    }
+		"X-Shopify-Access-Token": access_token,
+		"Content-Type": "application/json"
+	}
 
-	client = GraphqlClient(endpoint="https://" + store + "/admin/api/2020-04/graphql.json")
-	
+	client = GraphqlClient(endpoint="https://" + store +
+						   "/admin/api/2020-04/graphql.json")
+
 	query = """
 	mutation collectionRemoveProducts($id: ID!, $productIds: [ID!]!) {
 	  collectionRemoveProducts(id: $id, productIds: $productIds) {
-	    job {
-	      id
-	    }
-	    userErrors {
-	      field
-	      message
-	    }
+		job {
+		  id
+		}
+		userErrors {
+		  field
+		  message
+		}
 	  }
 	}
 	"""
@@ -64,6 +68,9 @@ def removeProducts(store, access_token, collection_id, product_id):
 	return data
 
 # Used for manual sort page
+
+
+# Used for manual sort page
 def queryProducts(store, access_token, collection_id, cursor=None, withVariants=False):
 
 	headers = {
@@ -71,7 +78,7 @@ def queryProducts(store, access_token, collection_id, cursor=None, withVariants=
         "Content-Type": "application/json"
     }
 
-	client = GraphqlClient(endpoint="https://" + store + "/admin/api/2020-04/graphql.json")
+	client = GraphqlClient(endpoint="https://" + store + "/admin/api/2022-07/graphql.json")
 	
 	if withVariants == False or withVariants == 'false':
 		query = """
@@ -124,7 +131,7 @@ def queryProducts(store, access_token, collection_id, cursor=None, withVariants=
 	            column
 	          }
 	        }
-		    products(first: 30, after: $cursor) {
+		    products(first: 24, after: $cursor) {
 		      pageInfo {
 		        hasNextPage
 		        hasPreviousPage
@@ -147,7 +154,7 @@ def queryProducts(store, access_token, collection_id, cursor=None, withVariants=
 		          featuredImage {
 	                transformedSrc(maxHeight: 300)
 	              }
-	              variants(first: 14) {
+	              variants(first: 1) {
 					pageInfo {
 						hasNextPage
 						hasPreviousPage
@@ -160,6 +167,19 @@ def queryProducts(store, access_token, collection_id, cursor=None, withVariants=
 			            title
 			            inventoryQuantity
 						sku
+						inventoryItem {
+							inventoryLevels(first: 15) {
+								edges {
+									node {
+										available
+										location {
+											name
+											id
+										}
+									}
+								}
+							}
+						}
 			          }
 			        }
 			      }
@@ -181,12 +201,12 @@ def queryVariants(store, access_token, product_id, cursor):
         "Content-Type": "application/json"
     }
 
-	client = GraphqlClient(endpoint="https://" + store + "/admin/api/2020-04/graphql.json")
+	client = GraphqlClient(endpoint="https://" + store + "/admin/api/2022-07/graphql.json")
 
 	query = """
 		query GetProductsById($id: ID!, $cursor: String) {
 			product(id: $id) {
-				variants(first: 30, after: $cursor) {
+				variants(first: 26, after: $cursor) {
 					pageInfo {
 						hasNextPage
 						hasPreviousPage
@@ -199,6 +219,19 @@ def queryVariants(store, access_token, product_id, cursor):
 			            title
 			            inventoryQuantity
 						sku
+						inventoryItem {
+							inventoryLevels(first: 15) {
+								edges {
+									node {
+										available
+										location {
+											name
+											id
+										}
+									}
+								}
+							}
+						}
 			          }
 			        }
 			    }
@@ -214,35 +247,37 @@ def queryVariants(store, access_token, product_id, cursor):
 def queryCollectionsOfProducts(store, access_token, product_id, cursor=None):
 
 	headers = {
-        "X-Shopify-Access-Token": access_token,
-        "Content-Type": "application/json"
-    }
+		"X-Shopify-Access-Token": access_token,
+		"Content-Type": "application/json"
+	}
 
-	client = GraphqlClient(endpoint="https://" + store + "/admin/api/2020-04/graphql.json")
-	
+	client = GraphqlClient(endpoint="https://" + store +
+						   "/admin/api/2020-04/graphql.json")
+
 	query = """
-    query MyQuery($product: ID!, $cursor: String) {
-      product(id: $product) {
-        title
-        collections(first: 250, after: $cursor) {
-        	pageInfo {
-        	  hasNextPage
-        	  hasPreviousPage
-        	}
-	        edges {
-	        	cursor
-	          node {
-	            id
-	            sortOrder
-	            productsCount
-	          }
-	      	}
-	    	}
-      }
+	query MyQuery($product: ID!, $cursor: String) {
+	  product(id: $product) {
+		title
+		collections(first: 250, after: $cursor) {
+			pageInfo {
+			  hasNextPage
+			  hasPreviousPage
+			}
+			edges {
+				cursor
+			  node {
+				id
+				sortOrder
+				productsCount
+			  }
+		  	}
+		}
+	  }
 	}
 	"""
 
-	variables = {'product': 'gid://shopify/Product/{0}'.format(product_id), 'cursor': cursor};
+	variables = {
+		'product': 'gid://shopify/Product/{0}'.format(product_id), 'cursor': cursor}
 
 	data = client.execute(query=query, headers=headers, variables=variables)
 
@@ -312,6 +347,36 @@ def queryCollections(store, access_token, search, cursor, direction):
 
 	return data
 
+
+def queryLocations(store, access_token):
+
+	headers = {
+		"X-Shopify-Access-Token": access_token,
+		"Content-Type": "application/json"
+	}
+
+	client = GraphqlClient(endpoint="https://" + store +
+						   "/admin/api/2020-04/graphql.json")
+
+	query = """
+		query Locations {
+			locations(first: 15) {
+				edges {
+					cursor
+					node {
+						name
+						id
+					}
+				}
+			}
+		}
+		"""
+
+	data = client.execute(query=query, headers=headers)
+
+	return data
+
+
 def updateCollection(store, access_token, collection, sortOrder):
 
 	headers = {
@@ -345,33 +410,34 @@ def updateCollection(store, access_token, collection, sortOrder):
 
 	return data
 
+
 def collectionCreate(store, access_token):
 
 	headers = {
-        "X-Shopify-Access-Token": access_token,
-        "Content-Type": "application/json"
-    }
+		"X-Shopify-Access-Token": access_token,
+		"Content-Type": "application/json"
+	}
 
-	client = GraphqlClient(endpoint="https://" + store + "/admin/api/2020-04/graphql.json")
-	
+	client = GraphqlClient(endpoint="https://" + store +
+						   "/admin/api/2020-04/graphql.json")
+
 	query = """
 	  mutation collectionCreate($input: CollectionInput!) {
-	    collectionCreate(input: $input) {
-	      collection {
-	        id
-	      }
-	      userErrors {
-	        field
-	        message
-	      }
-	    }
+		collectionCreate(input: $input) {
+		  collection {
+			id
+		  }
+		  userErrors {
+			field
+			message
+		  }
+		}
   	}
 	"""
 
-	variables = {'input': 'gid://shopify/Product/{0}'.format(product_id), 'cursor': cursor};
+	variables = {
+		'input': 'gid://shopify/Product/{0}'.format(product_id), 'cursor': cursor}
 
 	data = client.execute(query=query, headers=headers, variables=variables)
 
 	return data
-
-

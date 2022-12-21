@@ -1,6 +1,8 @@
 collectionUtils = {
 	initElements() {
+		const selectedLocations = utils.getCookie('locations') ? JSON.parse(utils.getCookie('locations')) : []
 		this.createLoading();
+		this.createLocationBar(selectedLocations);		
 		if(failed == 'true') {
 			if (window.top == window.self) {
 			  window.location.assign('https://' + shopOrigin + '/admin/apps/stock-app-2');
@@ -78,6 +80,35 @@ collectionUtils = {
 				}
 			}
 		}
+	},
+
+	createLocationBar(selectedLocations) {
+		if(typeof location_data != 'undefined') {
+			if(location_data?.data?.locations) {
+				let btns = '<div><label>Stock Locations</label></div><div class="btn-group">';
+				for (let i = 0; i < location_data.data.locations.edges.length; i++) {
+					const location = location_data.data.locations.edges[i];
+					btns = btns + `<button onclick="collectionUtils.updateLocation('${location?.node?.id}')" type="button" id="location-${location?.node?.id.replace('gid://shopify/Location/', '')}" class="btn btn-secondary ${selectedLocations.includes(location?.node?.id) ? 'card-display-off' : ''}">${location?.node?.name}</button>`
+				}
+
+				document.querySelector('#location-bar').innerHTML = btns + `
+				</div><p id="location-message" style="display: none;">Refresh to update selected locations</p>
+				`
+			}
+		}
+	},
+
+	updateLocation(id) {
+		let selectedLocations = utils.getCookie('locations') ? JSON.parse(utils.getCookie('locations')) : []
+		if(selectedLocations.includes(id)) {
+			selectedLocations = selectedLocations.filter(e => e !== id)
+			document.querySelector('#location-' + id.replace('gid://shopify/Location/', '')).classList.remove('card-display-off')
+		} else {
+			selectedLocations.push(id)
+			document.querySelector('#location-' + id.replace('gid://shopify/Location/', '')).classList.add('card-display-off')
+		}
+		document.querySelector('#location-message').style.display = 'block';
+		utils.setCookie('locations', JSON.stringify(selectedLocations), 300);
 	},
 
 	initTitleBar: function() {
@@ -684,20 +715,34 @@ class Product {
   
 	createVariants() {
 		let cardVariants
+		const selectedLocations = utils.getCookie('locations') ? JSON.parse(utils.getCookie('locations')) : []
 		if(this.variants) {
-			cardVariants = `<ul class="list-group products__productVariants">`
+			cardVariants = `<ul class="list-group products__productVariants">
+			${selectedLocations.length > 0 ? `<li data-toggle="tooltip" data-placement="top" title="Some or all locations have been deselected in Display Options" class="d-flex justify-content-between align-items-center list-group-variants">
+			<span>
+			<i class="fa fa-truck"></i>
+			<i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+			</span>
+			</li>` : ''}
+			`
 			this.variants.map(x => {
+				const inv = x?.node?.inventoryItem?.inventoryLevels ? this.getInventory(x, selectedLocations) : x.node.inventoryQuantity;
 				cardVariants = cardVariants + `
 				<li class="list-group-item d-flex justify-content-between align-items-center list-group-variants">
 				<span>${x.node.title == 'Default Title' ? 'Default' : x.node.title}</span>
 				<span> ${x.node.sku}</span>
-				  <span class="badge ${x.node.inventoryQuantity < 1 ? 'badge-danger' : x.node.inventoryQuantity < 5 ? 'badge-warning' : 'badge-primary'} badge-pill">${x.node.inventoryQuantity}</span>
+  			  	<span class="badge ${inv < 1 ? 'badge-danger' : inv < 5 ? 'badge-warning' : 'badge-primary'} badge-pill">${inv}</span>
 				</li>
 				`
 			})
 			cardVariants = cardVariants + `</ul>`
 		}
 		return cardVariants
+	}
+
+	
+	getInventory(x, selectedLocations) {
+		return x.node.inventoryItem.inventoryLevels.edges.reduce((total,x) => (selectedLocations.includes(x.node.location.id) ? total : total + x.node.available), 0)
 	}
 
   createStandardInfo() {
